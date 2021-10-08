@@ -22,17 +22,29 @@ The main research question that we will be exploring for this project is how cas
 
 These are only some of our initial questions and we will likely try to ask and answer many more questions about these two datasets as we proceed through the project.
 
-
-
 ## 2. Data
 
-We are utilising two datasets from the CDC website for this project. The first one entitled United States COVID-19 Cases and Deaths by State over Time reports aggregate counts of COVID-19 cases and death numbers daily and are based on the most recent numbers reported by states, territories, and other jurisdictions. The second dataset, COVID-19 Vaccinations in the United States, shows the overall US COVID-19 Vaccine deliveries and administration data at national and jurisdiction level.
+We are utilizing two datasets from the CDC website for this project. The first one entitled _United States COVID-19 Cases and Deaths by State over Time_ reports aggregate counts of COVID-19 cases and death numbers daily and are based on the most recent numbers reported by states, territories, and other jurisdictions. The second dataset, _COVID-19 Vaccinations in the United States_, shows the overall US COVID-19 Vaccine deliveries and administration data at the national and jurisdiction level.
+
+To learn more about the variables in each dataset, please refer to the README file in the `/data` folder of this project. A preview of the two datasets is shown below using the `glimpse()` function:
+
+```{r}
+US_deaths_cases <- 
+  read_csv("/cloud/project/data/United_States_COVID-19_Cases_and_Deaths_by_State_over_Time.csv")
+glimpse(US_deaths_cases)
+```
+
+```{r}
+US_vaccinations <- 
+  read_csv("/cloud/project/data/COVID-19_Vaccinations_in_the_United_States_Jurisdiction.csv")
+glimpse(US_vaccinations)
+```
+
+Sources:
 
 https://data.cdc.gov/Case-Surveillance/United-States-COVID-19-Cases-and-Deaths-by-State-o/9mfq-cb36
 
 https://data.cdc.gov/Vaccinations/COVID-19-Vaccinations-in-the-United-States-Jurisdi/unsk-b7fc
-
-
 
 ## 3. Data analysis plan
 
