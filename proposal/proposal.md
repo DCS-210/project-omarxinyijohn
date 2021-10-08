@@ -1,4 +1,4 @@
-Project proposal
+Project Proposal
 ================
 omarxinyijohn
 
@@ -26,11 +26,11 @@ state and date. Both data sources are publicly available on the CDC
 website. Links can be found in the data section of this proposal. A
 sampling of more specific questions include the following:
 
--   Are there any seasonal changes in cases/deaths?
--   How do changes differ across states?
--   Which vaccines were more popular in certain states (J&J, Pfizer,
+1.  Are there any seasonal changes in cases/deaths? How do changes
+    differ across states?
+2.  Which vaccines were more popular in certain states (J&J, Pfizer,
     Moderna)?
--   Have vaccines reduced cases and/or deaths and if so, to what extent?
+3.  Have vaccines reduced cases and/or deaths and if so, to what extent?
 
 These are only some of our initial questions and we will likely try to
 ask and answer many more questions about these two datasets as we
@@ -200,3 +200,62 @@ Sources:
 <https://data.cdc.gov/Vaccinations/COVID-19-Vaccinations-in-the-United-States-Jurisdi/unsk-b7fc>
 
 ## 3. Data analysis plan
+
+To answer the three initial questions we asked above, we need to have
+separate data analysis and visualization for each of them. We are going
+to explore more as we moving forward, but here are the specific elements
+and methods we need to address these three questions at this time.
+
+-   Outcome *y* & Predictor Variable *x* and Other Variables
+    1.  `US_deaths_cases`: cases/deaths (`tot_cases` / `tot_death`) &
+        time (`submission_date`); states (`group_by(state)`), seasons
+        (`facet_wrap~(season)` / `scale_x_break()`)
+    2.  `US_vaccinations`: total J&J, Pfizer, and Moderna vaccine
+        distributed (store
+        `Distributed_Janssen, Distributed_Moderna, Distributed_Pfizer`
+        into one variable) & count (no *y* specified); states
+        (`facet_wrap~(state)`);
+    3.  Merge `US_deaths_cases` & `US_vaccinations`: cases/deaths
+        (`tot_cases` / `tot_death`) & vaccinations/vaccination rates
+        (`Administered` / `Admin_Per_100K`)
+-   Data Analysis
+    -   Summary Statistics
+
+``` r
+#US_deaths_cases %>%
+```
+
+``` r
+#US_vaccinations %>%
+```
+
+-   Visualization
+
+1.  grouped line chart; `group_by(state)`; `facet_wrap~(season)` /
+    `scale_x_break()`
+    (<https://cran.r-project.org/web/packages/ggbreak/vignettes/ggbreak.html>)
+
+``` r
+#US_deaths_cases %>%
+```
+
+2.  barchart; `facet_wrap~(state)`
+
+``` r
+#US_vaccinations %>%
+```
+
+3.  scatter plot with line (`geom_point`, `geom_smooth`)
+
+-   Statistical Methods
+    -   Growth rate (cases; deaths; vaccinations)
+    -   Marginal efficiency of vaccination (the change in vaccinations
+        (*x*) divides the change in cases/deaths (*y*))
+    -   Comparative Statics
+-   Expected Results
+    1.  There are changes in cases/deaths over time relating to seasons
+        and/or states.
+    2.  States have difference preference towards the three vaccine
+        types (J&J, Pfizer, Moderna).
+    3.  There is a strong/weak positive/negative correlation/no clear
+        linear correlation between the vaccination and cases/deaths.
