@@ -209,43 +209,33 @@ and methods we need to address these three questions at this time.
 -   Outcome *y* & Predictor Variable *x* and Other Variables
     1.  `US_deaths_cases`: cases/deaths (`tot_cases` / `tot_death`) &
         time (`submission_date`); states (`group_by(state)`), seasons
-        (`facet_wrap~(season)` / `scale_x_break()`)
+        (`facet_wrap(~season)` / `scale_x_break()`)
     2.  `US_vaccinations`: total J&J, Pfizer, and Moderna vaccine
         distributed (store
-        `Distributed_Janssen, Distributed_Moderna, Distributed_Pfizer`
-        into one variable) & count (no *y* specified); states
-        (`facet_wrap~(state)`);
+        `Administered_Janssen, Administered_Moderna, Administered_Pfizer`
+        into one variable) & count (no *y* specified); states (
+        `facet_wrap(~Location)`);
     3.  Merge `US_deaths_cases` & `US_vaccinations`: cases/deaths
         (`tot_cases` / `tot_death`) & vaccinations/vaccination rates
         (`Administered` / `Admin_Per_100K`)
 -   Data Analysis
-    -   Summary Statistics
-
-``` r
-#US_deaths_cases %>%
-```
-
-``` r
-#US_vaccinations %>%
-```
-
--   Visualization
-
-1.  grouped line chart; `group_by(state)`; `facet_wrap~(season)` /
-    `scale_x_break()`
-    (<https://cran.r-project.org/web/packages/ggbreak/vignettes/ggbreak.html>)
-
-``` r
-#US_deaths_cases %>%
-```
-
-2.  barchart; `facet_wrap~(state)`
+    -   Summary Statistics & Visualization
+        1.  grouped line chart; `group_by(state)`; `facet_wrap~(season)`
+            / `scale_x_break()`
+            (<https://cran.r-project.org/web/packages/ggbreak/vignettes/ggbreak.html>)
+        2.  barchart; `facet_wrap~(state)`
+        3.  scatter plot with line (`geom_point`, `geom_smooth`) *We are
+            using a time series data here, which means that the common
+            summary statistics like mean, median, quartiles, standard
+            deviation, variance, mode etc. is not applicable. But we
+            will definitely apply some data summary as we proceed
+            through the project.* *The one below is a very preliminary
+            exploratory visualization. We will add more depth to it as
+            moving forward.*
 
 ``` r
 #US_vaccinations %>%
 ```
-
-3.  scatter plot with line (`geom_point`, `geom_smooth`)
 
 -   Statistical Methods
     -   Growth rate (cases; deaths; vaccinations)
