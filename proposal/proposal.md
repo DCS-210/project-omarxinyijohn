@@ -220,11 +220,11 @@ and methods we need to address these three questions at this time.
         (`Administered` / `Admin_Per_100K`)
 -   Data Analysis
     -   Summary Statistics & Visualization
-        -   *We are using a time series data here, which means that the
-            common summary statistics like mean, median, quartiles,
-            standard deviation, variance, mode etc. is not applicable.
-            But we will definitely apply some data summary as we proceed
-            through the project.*
+        -   *We are using time series data here, which means that the
+            common summary statistics like mean, median, quantiles,
+            standard deviation, variance, mode etc. are not applicable.
+            But we will definitely find other ways to summarise the data
+            as we proceed through the project.*
 
         1.  Grouped line chart: to reflect changes across time
 
@@ -263,3 +263,46 @@ and methods we need to address these three questions at this time.
         3.  There is a strong/weak positive/negative correlation/no
             clear linear correlation between the vaccination and
             cases/deaths.
+
+Sample Visualization:
+
+First we filter the data so it only includes the most up-to-date
+vaccination numbers as of 10/05/2021:
+
+``` r
+October_vaccinations <- filter(US_vaccinations, Date == "10/05/2021")
+```
+
+Next, we take the top 20 locations and create a bar plot to see which
+vaccines are in each respective location:
+
+``` r
+October_vaccinations %>% 
+  select(Location, Series_Complete_Yes, Series_Complete_Janssen,
+         Series_Complete_Moderna, Series_Complete_Pfizer, 
+         Series_Complete_Unk_Manuf) %>%
+  group_by(Location) %>%
+  arrange(desc(Series_Complete_Yes)) %>%
+  head(20) %>%
+  pivot_longer(cols = -Location, names_to = "Series_Type") %>%
+  filter(Series_Type == "Series_Complete_Janssen" | 
+           Series_Type == "Series_Complete_Moderna" |
+           Series_Type == "Series_Complete_Pfizer" | 
+           Series_Type == "Series_Complete_Unk_Manuf") %>%
+  ggplot(aes(x = reorder(Location, value), y = value/ 10^6, fill = Series_Type)) +
+  geom_bar(stat = "identity") + 
+  labs(title = "US Vaccinations Breakdown",
+       x = "Location",
+       y = "People (in millions)",
+       fill = "Type of Vaccine") +
+  coord_flip() + 
+  theme_bw() +
+  scale_color_viridis_d() +
+  scale_y_continuous(breaks = scales::pretty_breaks(n = 20))
+```
+
+![](proposal_files/figure-gfm/vaccine-bar-chart-1.png)<!-- -->
+
+It looks like the Pfizer vaccine is the most popular across the board.
+If we want a better visualization to compare states, we could filter out
+the `US` location from this chart.
