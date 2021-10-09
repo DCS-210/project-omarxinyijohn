@@ -210,8 +210,8 @@ and methods we need to address these three questions at this time.
     1.  `US_deaths_cases`: cases/deaths (`tot_cases` / `tot_death`) &
         time (`submission_date`); states (`group_by(state)`), seasons
         (`facet_wrap(~season)` / `scale_x_break()`)
-    2.  `US_vaccinations`: total J&J, Pfizer, and Moderna vaccine
-        distributed (store
+    2.  `US_vaccinations`: J&J, Pfizer, and Moderna vaccine administered
+        (store
         `Administered_Janssen, Administered_Moderna, Administered_Pfizer`
         into one variable) & count (no *y* specified); states (
         `facet_wrap(~Location)`);
@@ -220,32 +220,46 @@ and methods we need to address these three questions at this time.
         (`Administered` / `Admin_Per_100K`)
 -   Data Analysis
     -   Summary Statistics & Visualization
-        1.  grouped line chart; `group_by(state)`; `facet_wrap~(season)`
-            / `scale_x_break()`
+        -   *We are using a time series data here, which means that the
+            common summary statistics like mean, median, quartiles,
+            standard deviation, variance, mode etc. is not applicable.
+            But we will definitely apply some data summary as we proceed
+            through the project.*
+
+        1.  Grouped line chart: to reflect changes across time
+
+        -   To reflect the changes across states: `group_by(state)`
+        -   To reflect the changes across seasons: `facet_wrap(~season)`
+            or `scale_x_break()`
             (<https://cran.r-project.org/web/packages/ggbreak/vignettes/ggbreak.html>)
-        2.  barchart; `facet_wrap~(state)`
-        3.  scatter plot with line (`geom_point`, `geom_smooth`) *We are
-            using a time series data here, which means that the common
-            summary statistics like mean, median, quartiles, standard
-            deviation, variance, mode etc. is not applicable. But we
-            will definitely apply some data summary as we proceed
-            through the project.* *The one below is a very preliminary
-            exploratory visualization. We will add more depth to it as
-            moving forward.*
 
-``` r
-#US_vaccinations %>%
-```
+        2.  Barchart: to reflect the difference between the administered
+            amount of the three vaccine types
 
--   Statistical Methods
-    -   Growth rate (cases; deaths; vaccinations)
-    -   Marginal efficiency of vaccination (the change in vaccinations
-        (*x*) divides the change in cases/deaths (*y*))
-    -   Comparative Statics
--   Expected Results
-    1.  There are changes in cases/deaths over time relating to seasons
-        and/or states.
-    2.  States have difference preference towards the three vaccine
-        types (J&J, Pfizer, Moderna).
-    3.  There is a strong/weak positive/negative correlation/no clear
-        linear correlation between the vaccination and cases/deaths.
+        -   For variable x: we need to create a new variable that
+            contains the three vaccine types we want to analyze: J&J,
+            Pfizer, and Moderna vaccine administered
+        -   For variable y: we don’t need to specify since we only need
+            the amount of vacccinations administered here
+        -   To reflect the differences across states:
+            `facet_wrap~(Location)`
+
+        3.  Scatter plot with line (`geom_point`, `geom_smooth`): to
+            reflect the distribution and the trend
+
+        -   For datasets: we need to merge the data in the two datasets
+            to have both cases/deaths and vaccinations administered in
+            the same dataset
+    -   Statistical Methods
+        -   Growth rate (cases; deaths; vaccinations)
+        -   Marginal efficiency of vaccination (the change in
+            vaccinations (*x*) divides the change in cases/deaths (*y*))
+        -   Comparative Statics
+    -   Expected Results
+        1.  There are changes in cases/deaths over time relating to
+            seasons and/or states.
+        2.  States have difference preference towards the three vaccine
+            types (J&J, Pfizer, Moderna).
+        3.  There is a strong/weak positive/negative correlation/no
+            clear linear correlation between the vaccination and
+            cases/deaths.
