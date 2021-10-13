@@ -28,7 +28,7 @@ sampling of more specific questions include the following:
 
 1.  Are there any seasonal changes in cases/deaths? How do changes
     differ across states?
-2.  Which vaccines were more popular in certain states (J&J, Pfizer,
+2.  Which vaccines are more popular in certain states (J&J, Pfizer,
     Moderna)?
 3.  Have vaccines reduced cases and/or deaths and if so, to what extent?
 
