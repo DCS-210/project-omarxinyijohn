@@ -236,7 +236,8 @@ new_US_deaths_cases <- US_deaths_cases %>%
   summarise(total_new_cases = sum(new_case),
             total_new_deaths = sum(new_death)) 
 
-new_US_deaths_cases$submission_date = as.Date(new_US_deaths_cases$submission_date, format="%m/%d/%Y")
+new_US_deaths_cases$submission_date = as.Date(new_US_deaths_cases$submission_date,
+                                              format="%m/%d/%Y")
 
 new_US_deaths_cases
 ```
@@ -257,16 +258,28 @@ new_US_deaths_cases
     ## # … with 613 more rows
 
 ``` r
-#new_US_deaths_cases <- new_US_deaths_cases[order(as.Date(new_US_deaths_cases$submission_date, format="%m/%d/%Y")),]
-
-#new_US_deaths_cases
-```
-
-``` r
 new_US_deaths_cases %>%
   ggplot() +
   geom_point(aes(x = submission_date, y = total_new_cases)) +
   labs(title = "New Cases vs. Time",
+       x = "Date",
+       y = "Number of People") +
+  theme_bw() +
+  theme(panel.border = element_blank(), 
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank(), 
+        axis.line = element_line(colour = "black")) +
+  scale_x_date(date_breaks = "2 month", date_labels =  "%b %Y") +
+  scale_y_continuous(breaks = scales::pretty_breaks(n = 10))
+```
+
+![](Scratchwork_files/figure-gfm/unnamed-chunk-2-1.png)<!-- -->
+
+``` r
+new_US_deaths_cases %>%
+  ggplot() +
+  geom_point(aes(x = submission_date, y = total_new_deaths)) +
+  labs(title = "New Deaths vs. Time",
        x = "Date",
        y = "Number of People") +
   theme_bw() +
