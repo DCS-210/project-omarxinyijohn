@@ -118,4 +118,4 @@ October_vaccinations %>%
   scale_y_continuous(breaks = scales::pretty_breaks(n = 20))
 ```
  
- It looks like the Pfizer vaccine is the most popular across the board. If we want a better visualization to compare states, we could filter out the `US` location from this chart.
+It looks like the Pfizer vaccine is the most popular across the board. If we want a better visualization to compare states, we could filter out the `US` location from this chart.
