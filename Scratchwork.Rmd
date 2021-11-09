@@ -192,3 +192,169 @@ new_US_deaths_cases %>%
   scale_y_continuous(breaks = scales::pretty_breaks(n = 10))
 ```
 
+```{r}
+new_US_vaccinations <- US_vaccinations %>%
+  select(Date, Location, Series_Complete_Yes, 
+         Series_Complete_Pop_Pct,
+         Series_Complete_12PlusPop_Pct,
+         Series_Complete_18PlusPop_Pct,
+         Series_Complete_65PlusPop_Pct,
+         Series_Complete_Janssen, Series_Complete_Moderna, 
+         Series_Complete_Pfizer, Series_Complete_Unk_Manuf) %>%
+  filter(Location %in% c("US"))
+
+new_US_vaccinations$Date = as.Date(new_US_vaccinations$Date,
+                                              format="%m/%d/%Y")
+
+new_US_vaccinations
+```
+
+```{r, fig.width=20, fig.height=12}
+new_US_vaccinations %>%
+  filter(Series_Complete_Pop_Pct > 0) %>%
+  ggplot() +
+  geom_point(aes(x = Date, y = Series_Complete_Pop_Pct)) +
+  labs(title = "Series Complete Vaccinations Pop. Pct vs. Time",
+       x = "Date",
+       y = "Percent of US Population") +
+  theme_bw() +
+  theme(axis.line = element_line(colour = "black"),
+        axis.text.x = element_text(color = "grey20", 
+                                   size = 15, 
+                                   angle = 0, 
+                                   hjust = .5, 
+                                   vjust = .5, 
+                                   face = "plain"),
+        axis.text.y = element_text(color = "grey20", 
+                                   size = 15, 
+                                   angle = 0, 
+                                   hjust = .5, 
+                                   vjust = .5, 
+                                   face = "plain"),  
+        axis.title.x = element_text(color = "grey20", 
+                                    size = 30, 
+                                    angle = 0, 
+                                    hjust = .5, 
+                                    vjust = 0, 
+                                    face = "plain"),
+        axis.title.y = element_text(color = "grey20", 
+                                    size = 30, 
+                                    angle = 90, 
+                                    hjust = .5, 
+                                    vjust = 1, 
+                                    face = "plain"),
+        plot.title = element_text(color = "grey20", 
+                                    size = 30, 
+                                    angle = 0, 
+                                    hjust = .5, 
+                                    vjust = .5, 
+                                    face = "plain")) +
+  scale_x_date(date_breaks = "1 month", date_labels =  "%b %Y") +
+  scale_y_continuous(breaks = scales::pretty_breaks(n = 10))
+```
+
+```{r, fig.width=20, fig.height=12}
+new_US_vaccinations %>%
+  filter(Series_Complete_Yes > 0) %>%
+  ggplot() +
+  geom_point(aes(x = Date, y = Series_Complete_Yes / 10^6)) +
+  labs(title = "Series Complete Vaccinations Total Pop. vs. Time",
+       x = "Date",
+       y = "Number of people (in millions)") +
+  theme_bw() +
+  theme(axis.line = element_line(colour = "black"),
+        axis.text.x = element_text(color = "grey20", 
+                                   size = 15, 
+                                   angle = 0, 
+                                   hjust = .5, 
+                                   vjust = .5, 
+                                   face = "plain"),
+        axis.text.y = element_text(color = "grey20", 
+                                   size = 15, 
+                                   angle = 0, 
+                                   hjust = .5, 
+                                   vjust = .5, 
+                                   face = "plain"),  
+        axis.title.x = element_text(color = "grey20", 
+                                    size = 30, 
+                                    angle = 0, 
+                                    hjust = .5, 
+                                    vjust = 0, 
+                                    face = "plain"),
+        axis.title.y = element_text(color = "grey20", 
+                                    size = 30, 
+                                    angle = 90, 
+                                    hjust = .5, 
+                                    vjust = 1, 
+                                    face = "plain"),
+        plot.title = element_text(color = "grey20", 
+                                    size = 30, 
+                                    angle = 0, 
+                                    hjust = .5, 
+                                    vjust = .5, 
+                                    face = "plain")) +
+  scale_x_date(date_breaks = "1 month", date_labels =  "%b %Y") +
+  scale_y_continuous(breaks = scales::pretty_breaks(n = 10))
+```
+
+```{r, fig.width=20, fig.height=18}
+Pop_Pct.labs <- c("% Fully Vaccinated 12+", 
+                  "% Fully Vaccinated (Total Pop)",
+                  "% Fully Vaccinated 18+", 
+                  "% Fully Vaccinated 65+")
+names(Pop_Pct.labs) <- c("Series_Complete_12PlusPop_Pct", 
+                         "Series_Complete_Pop_Pct",
+                         "Series_Complete_18PlusPop_Pct",
+                         "Series_Complete_65PlusPop_Pct")
+
+new_US_vaccinations %>%
+  filter(Series_Complete_Yes > 0) %>%
+  pivot_longer(cols = c(Series_Complete_Pop_Pct,
+                        Series_Complete_12PlusPop_Pct,
+                        Series_Complete_18PlusPop_Pct,
+                        Series_Complete_65PlusPop_Pct),
+               names_to = "Pop_Pct_Type",
+               values_to = "Pop_Pct") %>%
+  ggplot() +
+  geom_point(aes(x = Date, y = Pop_Pct)) +
+  facet_wrap(~Pop_Pct_Type,
+             labeller = labeller(Pop_Pct_Type = Pop_Pct.labs)) + 
+  labs(title = "Fully Vaccinated Pop. Pct vs. Time",
+       x = "Date",
+       y = "Percent of US Population") +
+  theme_bw() +
+  theme(strip.text = element_text(size = 20),
+        axis.line = element_line(colour = "black"),
+        axis.text.x = element_text(color = "grey20", 
+                                   size = 15, 
+                                   angle = 0, 
+                                   hjust = .5, 
+                                   vjust = .5, 
+                                   face = "plain"),
+        axis.text.y = element_text(color = "grey20", 
+                                   size = 15, 
+                                   angle = 0, 
+                                   hjust = .5, 
+                                   vjust = .5, 
+                                   face = "plain"),  
+        axis.title.x = element_text(color = "grey20", 
+                                    size = 30, 
+                                    angle = 0, 
+                                    hjust = .5, 
+                                    vjust = 0, 
+                                    face = "plain"),
+        axis.title.y = element_text(color = "grey20", 
+                                    size = 30, 
+                                    angle = 90, 
+                                    hjust = .5, 
+                                    vjust = 1, 
+                                    face = "plain"),
+        plot.title = element_text(color = "grey20", 
+                                    size = 30, 
+                                    angle = 0, 
+                                    hjust = .5, 
+                                    vjust = .5, 
+                                    face = "plain")) +
+  scale_x_date(date_breaks = "2 month", date_labels =  "%b %Y") +
+  scale_y_continuous(breaks = scales::pretty_breaks(n = 10))
+```

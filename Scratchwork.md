@@ -346,3 +346,194 @@ new_US_deaths_cases %>%
 ```
 
 ![](Scratchwork_files/figure-gfm/unnamed-chunk-3-1.png)<!-- -->
+
+``` r
+new_US_vaccinations <- US_vaccinations %>%
+  select(Date, Location, Series_Complete_Yes, 
+         Series_Complete_Pop_Pct,
+         Series_Complete_12PlusPop_Pct,
+         Series_Complete_18PlusPop_Pct,
+         Series_Complete_65PlusPop_Pct,
+         Series_Complete_Janssen, Series_Complete_Moderna, 
+         Series_Complete_Pfizer, Series_Complete_Unk_Manuf) %>%
+  filter(Location %in% c("US"))
+
+new_US_vaccinations$Date = as.Date(new_US_vaccinations$Date,
+                                              format="%m/%d/%Y")
+
+new_US_vaccinations
+```
+
+    ## # A tibble: 297 × 11
+    ##    Date       Location Series_Complete_Yes Series_Complete_P… Series_Complete_1…
+    ##    <date>     <chr>                  <dbl>              <dbl>              <dbl>
+    ##  1 2021-10-05 US                 186060146               56                 65.6
+    ##  2 2021-10-04 US                 185788098               56                 65.5
+    ##  3 2021-10-03 US                 185492579               55.9               65.4
+    ##  4 2021-10-02 US                 185143698               55.8               65.2
+    ##  5 2021-10-01 US                 184852416               55.7               65.1
+    ##  6 2021-09-30 US                 184601450               55.6               65.1
+    ##  7 2021-09-29 US                 184335263               55.5               65  
+    ##  8 2021-09-28 US                 184065824               55.5               64.9
+    ##  9 2021-09-27 US                 183888907               55.4               64.8
+    ## 10 2021-09-26 US                 183670870               55.3               64.7
+    ## # … with 287 more rows, and 6 more variables:
+    ## #   Series_Complete_18PlusPop_Pct <dbl>, Series_Complete_65PlusPop_Pct <dbl>,
+    ## #   Series_Complete_Janssen <dbl>, Series_Complete_Moderna <dbl>,
+    ## #   Series_Complete_Pfizer <dbl>, Series_Complete_Unk_Manuf <dbl>
+
+``` r
+new_US_vaccinations %>%
+  filter(Series_Complete_Pop_Pct > 0) %>%
+  ggplot() +
+  geom_point(aes(x = Date, y = Series_Complete_Pop_Pct)) +
+  labs(title = "Series Complete Vaccinations Pop. Pct vs. Time",
+       x = "Date",
+       y = "Percent of US Population") +
+  theme_bw() +
+  theme(axis.line = element_line(colour = "black"),
+        axis.text.x = element_text(color = "grey20", 
+                                   size = 15, 
+                                   angle = 0, 
+                                   hjust = .5, 
+                                   vjust = .5, 
+                                   face = "plain"),
+        axis.text.y = element_text(color = "grey20", 
+                                   size = 15, 
+                                   angle = 0, 
+                                   hjust = .5, 
+                                   vjust = .5, 
+                                   face = "plain"),  
+        axis.title.x = element_text(color = "grey20", 
+                                    size = 30, 
+                                    angle = 0, 
+                                    hjust = .5, 
+                                    vjust = 0, 
+                                    face = "plain"),
+        axis.title.y = element_text(color = "grey20", 
+                                    size = 30, 
+                                    angle = 90, 
+                                    hjust = .5, 
+                                    vjust = 1, 
+                                    face = "plain"),
+        plot.title = element_text(color = "grey20", 
+                                    size = 30, 
+                                    angle = 0, 
+                                    hjust = .5, 
+                                    vjust = .5, 
+                                    face = "plain")) +
+  scale_x_date(date_breaks = "1 month", date_labels =  "%b %Y") +
+  scale_y_continuous(breaks = scales::pretty_breaks(n = 10))
+```
+
+![](Scratchwork_files/figure-gfm/unnamed-chunk-5-1.png)<!-- -->
+
+``` r
+new_US_vaccinations %>%
+  filter(Series_Complete_Yes > 0) %>%
+  ggplot() +
+  geom_point(aes(x = Date, y = Series_Complete_Yes / 10^6)) +
+  labs(title = "Series Complete Vaccinations Total Pop. vs. Time",
+       x = "Date",
+       y = "Number of people (in millions)") +
+  theme_bw() +
+  theme(axis.line = element_line(colour = "black"),
+        axis.text.x = element_text(color = "grey20", 
+                                   size = 15, 
+                                   angle = 0, 
+                                   hjust = .5, 
+                                   vjust = .5, 
+                                   face = "plain"),
+        axis.text.y = element_text(color = "grey20", 
+                                   size = 15, 
+                                   angle = 0, 
+                                   hjust = .5, 
+                                   vjust = .5, 
+                                   face = "plain"),  
+        axis.title.x = element_text(color = "grey20", 
+                                    size = 30, 
+                                    angle = 0, 
+                                    hjust = .5, 
+                                    vjust = 0, 
+                                    face = "plain"),
+        axis.title.y = element_text(color = "grey20", 
+                                    size = 30, 
+                                    angle = 90, 
+                                    hjust = .5, 
+                                    vjust = 1, 
+                                    face = "plain"),
+        plot.title = element_text(color = "grey20", 
+                                    size = 30, 
+                                    angle = 0, 
+                                    hjust = .5, 
+                                    vjust = .5, 
+                                    face = "plain")) +
+  scale_x_date(date_breaks = "1 month", date_labels =  "%b %Y") +
+  scale_y_continuous(breaks = scales::pretty_breaks(n = 10))
+```
+
+![](Scratchwork_files/figure-gfm/unnamed-chunk-6-1.png)<!-- -->
+
+``` r
+Pop_Pct.labs <- c("% Fully Vaccinated 12+", 
+                  "% Fully Vaccinated (Total Pop)",
+                  "% Fully Vaccinated 18+", 
+                  "% Fully Vaccinated 65+")
+names(Pop_Pct.labs) <- c("Series_Complete_12PlusPop_Pct", 
+                         "Series_Complete_Pop_Pct",
+                         "Series_Complete_18PlusPop_Pct",
+                         "Series_Complete_65PlusPop_Pct")
+
+new_US_vaccinations %>%
+  filter(Series_Complete_Yes > 0) %>%
+  pivot_longer(cols = c(Series_Complete_Pop_Pct,
+                        Series_Complete_12PlusPop_Pct,
+                        Series_Complete_18PlusPop_Pct,
+                        Series_Complete_65PlusPop_Pct),
+               names_to = "Pop_Pct_Type",
+               values_to = "Pop_Pct") %>%
+  ggplot() +
+  geom_point(aes(x = Date, y = Pop_Pct)) +
+  facet_wrap(~Pop_Pct_Type,
+             labeller = labeller(Pop_Pct_Type = Pop_Pct.labs)) + 
+  labs(title = "Fully Vaccinated Pop. Pct vs. Time",
+       x = "Date",
+       y = "Percent of US Population") +
+  theme_bw() +
+  theme(strip.text = element_text(size = 20),
+        axis.line = element_line(colour = "black"),
+        axis.text.x = element_text(color = "grey20", 
+                                   size = 15, 
+                                   angle = 0, 
+                                   hjust = .5, 
+                                   vjust = .5, 
+                                   face = "plain"),
+        axis.text.y = element_text(color = "grey20", 
+                                   size = 15, 
+                                   angle = 0, 
+                                   hjust = .5, 
+                                   vjust = .5, 
+                                   face = "plain"),  
+        axis.title.x = element_text(color = "grey20", 
+                                    size = 30, 
+                                    angle = 0, 
+                                    hjust = .5, 
+                                    vjust = 0, 
+                                    face = "plain"),
+        axis.title.y = element_text(color = "grey20", 
+                                    size = 30, 
+                                    angle = 90, 
+                                    hjust = .5, 
+                                    vjust = 1, 
+                                    face = "plain"),
+        plot.title = element_text(color = "grey20", 
+                                    size = 30, 
+                                    angle = 0, 
+                                    hjust = .5, 
+                                    vjust = .5, 
+                                    face = "plain")) +
+  scale_x_date(date_breaks = "2 month", date_labels =  "%b %Y") +
+  scale_y_continuous(breaks = scales::pretty_breaks(n = 10))
+```
+
+![](Scratchwork_files/figure-gfm/unnamed-chunk-7-1.png)<!-- -->
