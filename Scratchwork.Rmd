@@ -98,13 +98,65 @@ new_US_deaths_cases <- US_deaths_cases %>%
                            "AS", "PW", "FSM"))) %>%
   group_by(submission_date) %>%
   summarise(total_new_cases = sum(new_case),
-            total_new_deaths = sum(new_death)) 
+            total_new_deaths = sum(new_death),
+            total_cases = sum(tot_cases),
+            total_deaths = sum(tot_death)) 
 
 new_US_deaths_cases$submission_date = as.Date(new_US_deaths_cases$submission_date,
                                               format="%m/%d/%Y")
 
+new_US_deaths_cases <- new_US_deaths_cases %>%
+  arrange(desc(submission_date))
+
 new_US_deaths_cases
 ```
+
+```{r}
+new_US_deaths_cases %>% 
+  slice_max(total_new_cases, n = 5) 
+
+max_cases_row <- new_US_deaths_cases %>% 
+  slice_max(total_new_cases, n = 1) 
+
+max_cases_date <- max_cases_row$submission_date
+
+max_cases_date
+```
+
+```{r}
+new_US_deaths_cases %>%
+  slice_max(total_new_deaths, n = 5)
+
+max_deaths_row <- new_US_deaths_cases %>% 
+  slice_max(total_new_deaths, n = 1) 
+
+max_deaths_date <- max_deaths_row$submission_date
+
+max_deaths_date
+```
+
+```{r}
+as.integer(max_deaths_date) - as.integer(max_cases_date)
+```
+
+```{r}
+x <- as.ts(c(11,7,8,12,14))
+y <- as.ts(c(7,10,6,7,10))
+x
+```
+
+```{r}
+ccf_values1 = ccf(new_US_deaths_cases$total_new_cases, new_US_deaths_cases$total_new_deaths, lag.max = 100)
+ccf_values1
+
+# https://online.stat.psu.edu/stat510/lesson/8/8.2
+```
+
+```{r}
+ccf_values2 = ccf(new_US_deaths_cases$total_cases, new_US_deaths_cases$total_deaths, lag.max = 100)
+ccf_values2
+```
+
 
 ```{r, fig.width=20, fig.height=12}
 new_US_deaths_cases %>%
@@ -156,6 +208,92 @@ new_US_deaths_cases %>%
   labs(title = "New Deaths vs. Time",
        x = "Date",
        y = "Number of People") +
+  theme_bw() +
+  theme(axis.line = element_line(colour = "black"),
+        axis.text.x = element_text(color = "grey20", 
+                                   size = 15, 
+                                   angle = 0, 
+                                   hjust = .5, 
+                                   vjust = .5, 
+                                   face = "plain"),
+        axis.text.y = element_text(color = "grey20", 
+                                   size = 15, 
+                                   angle = 0, 
+                                   hjust = .5, 
+                                   vjust = .5, 
+                                   face = "plain"),  
+        axis.title.x = element_text(color = "grey20", 
+                                    size = 30, 
+                                    angle = 0, 
+                                    hjust = .5, 
+                                    vjust = 0, 
+                                    face = "plain"),
+        axis.title.y = element_text(color = "grey20", 
+                                    size = 30, 
+                                    angle = 90, 
+                                    hjust = .5, 
+                                    vjust = 1, 
+                                    face = "plain"),
+        plot.title = element_text(color = "grey20", 
+                                    size = 30, 
+                                    angle = 0, 
+                                    hjust = .5, 
+                                    vjust = .5, 
+                                    face = "plain")) +
+  scale_x_date(date_breaks = "2 month", date_labels =  "%b %Y") +
+  scale_y_continuous(breaks = scales::pretty_breaks(n = 10))
+```
+
+```{r, fig.width=20, fig.height=12}
+new_US_deaths_cases %>%
+  ggplot() +
+  geom_point(aes(x = submission_date, y = total_cases / 10^6)) +
+  labs(title = "Total Cases vs. Time",
+       x = "Date",
+       y = "Number of People (millions)") +
+  theme_bw() +
+  theme(axis.line = element_line(colour = "black"),
+        axis.text.x = element_text(color = "grey20", 
+                                   size = 15, 
+                                   angle = 0, 
+                                   hjust = .5, 
+                                   vjust = .5, 
+                                   face = "plain"),
+        axis.text.y = element_text(color = "grey20", 
+                                   size = 15, 
+                                   angle = 0, 
+                                   hjust = .5, 
+                                   vjust = .5, 
+                                   face = "plain"),  
+        axis.title.x = element_text(color = "grey20", 
+                                    size = 30, 
+                                    angle = 0, 
+                                    hjust = .5, 
+                                    vjust = 0, 
+                                    face = "plain"),
+        axis.title.y = element_text(color = "grey20", 
+                                    size = 30, 
+                                    angle = 90, 
+                                    hjust = .5, 
+                                    vjust = 1, 
+                                    face = "plain"),
+        plot.title = element_text(color = "grey20", 
+                                    size = 30, 
+                                    angle = 0, 
+                                    hjust = .5, 
+                                    vjust = .5, 
+                                    face = "plain")) +
+  scale_x_date(date_breaks = "2 month", date_labels =  "%b %Y") +
+  scale_y_continuous(breaks = scales::pretty_breaks(n = 10))
+```
+
+```{r, fig.width=20, fig.height=12}
+new_US_deaths_cases %>%
+  ggplot() +
+  geom_point(aes(x = submission_date, y = total_deaths / 10^3)) +
+  labs(title = "Total Deaths vs. Time",
+       x = "Date",
+       y = "Number of People (thousands)") +
   theme_bw() +
   theme(axis.line = element_line(colour = "black"),
         axis.text.x = element_text(color = "grey20", 
@@ -357,4 +495,26 @@ new_US_vaccinations %>%
                                     face = "plain")) +
   scale_x_date(date_breaks = "2 month", date_labels =  "%b %Y") +
   scale_y_continuous(breaks = scales::pretty_breaks(n = 10))
+```
+
+```{r}
+merged_US_data <- inner_join(new_US_vaccinations, new_US_deaths_cases, by = c("Date" = "submission_date")) %>%
+  filter(Series_Complete_Yes > 0)
+
+merged_US_data
+```
+
+```{r}
+ccf_values3 = ccf(merged_US_data$Series_Complete_Yes, merged_US_data$total_cases, lag.max = 150)
+ccf_values3
+```
+
+```{r}
+ccf_values4 = ccf(merged_US_data$Series_Complete_Yes, merged_US_data$total_deaths, lag.max = 250)
+ccf_values4
+```
+
+```{r}
+ccf_values4 = ccf(merged_US_data$Series_Complete_Pop_Pct, merged_US_data$total_new_deaths, lag.max = 150)
+ccf_values4
 ```
