@@ -6,6 +6,10 @@ output: github_document
 ```{r load-packages, message = FALSE}
 library(tidyverse)
 library(broom)
+library(lubridate)
+library(devtools)
+library(dsbox)
+library(ggridges)
 ```
 
 ```{r view-deaths-cases}
@@ -517,4 +521,67 @@ ccf_values4
 ```{r}
 ccf_values4 = ccf(merged_US_data$Series_Complete_Pop_Pct, merged_US_data$total_new_deaths, lag.max = 150)
 ccf_values4
+```
+
+```{r}
+month(new_US_deaths_cases$submission_date)
+```
+
+
+```{r}
+new_US_deaths_cases %>%
+  mutate(season = case_when(
+  month(submission_date) %in% c(9, 10, 11) ~ "Fall",
+  month(submission_date) %in% c(12, 1, 2) ~ "Winter",
+  month(submission_date) %in% c(3, 4, 5) ~ "Spring",
+  month(submission_date) %in% c(6, 7, 8) ~ "Summer"
+)) %>%
+  group_by(season) %>%
+  summarise(median_ncases = median(total_new_cases, na.rm = TRUE),
+            median_ndeaths = median(total_new_deaths, na.rm = TRUE),
+            mean_ncases = mean(total_new_cases, na.rm = TRUE),
+            mean_ndeaths = mean(total_new_deaths, na.rm = TRUE),
+            sd_ncases = sd(total_new_cases, na.rm = TRUE),
+            sd_ndeaths = sd(total_new_deaths, na.rm = TRUE),
+            min_ncases = min(total_new_cases, na.rm = TRUE),
+            max_ncases = max(total_new_cases, na.rm = TRUE),
+            iqr_ncases = IQR(total_new_cases, na.rm = TRUE))
+```
+
+```{r, fig.width=14, fig.height=10}
+new_US_deaths_cases %>%
+  mutate(season = case_when(
+  month(submission_date) %in% c(9, 10, 11) ~ "Fall",
+  month(submission_date) %in% c(12, 1, 2) ~ "Winter",
+  month(submission_date) %in% c(3, 4, 5) ~ "Spring",
+  month(submission_date) %in% c(6, 7, 8) ~ "Summer"
+)) %>%
+  ggplot(aes(x = total_new_cases / 10^3, 
+             y = season, 
+             fill = season)) +
+  geom_density_ridges(alpha = 0.2) +
+  labs(title = "Ridge plot of total new cases by season",
+       x = "New Cases (Thousands)",
+       y = "Season",
+       fill = "Season") +
+  theme_bw()
+```
+
+```{r, fig.width=14, fig.height=10}
+new_US_deaths_cases %>%
+  mutate(season = case_when(
+  month(submission_date) %in% c(9, 10, 11) ~ "Fall",
+  month(submission_date) %in% c(12, 1, 2) ~ "Winter",
+  month(submission_date) %in% c(3, 4, 5) ~ "Spring",
+  month(submission_date) %in% c(6, 7, 8) ~ "Summer"
+)) %>%
+  ggplot(aes(x = total_new_cases / 10^3, 
+             y = season, 
+             fill = season)) +
+  geom_boxplot() +
+  labs(title = "Ridge plot of total new cases by season",
+       x = "New Cases (Thousands)",
+       y = "Season",
+       fill = "Season") +
+  theme_bw()
 ```

@@ -4,6 +4,10 @@ Scratchwork
 ``` r
 library(tidyverse)
 library(broom)
+library(lubridate)
+library(devtools)
+library(dsbox)
+library(ggridges)
 ```
 
 ``` r
@@ -1061,3 +1065,107 @@ ccf_values4
     ## -0.174 -0.193 -0.212 -0.231 -0.250 -0.267 -0.285 -0.304 -0.322 -0.338 -0.356 
     ##    147    148    149    150 
     ## -0.373 -0.388 -0.404 -0.421
+
+``` r
+month(new_US_deaths_cases$submission_date)
+```
+
+    ##   [1] 10 10 10 10 10  9  9  9  9  9  9  9  9  9  9  9  9  9  9  9  9  9  9  9  9
+    ##  [26]  9  9  9  9  9  9  9  9  9  9  8  8  8  8  8  8  8  8  8  8  8  8  8  8  8
+    ##  [51]  8  8  8  8  8  8  8  8  8  8  8  8  8  8  8  8  7  7  7  7  7  7  7  7  7
+    ##  [76]  7  7  7  7  7  7  7  7  7  7  7  7  7  7  7  7  7  7  7  7  7  7  6  6  6
+    ## [101]  6  6  6  6  6  6  6  6  6  6  6  6  6  6  6  6  6  6  6  6  6  6  6  6  6
+    ## [126]  6  6  5  5  5  5  5  5  5  5  5  5  5  5  5  5  5  5  5  5  5  5  5  5  5
+    ## [151]  5  5  5  5  5  5  5  5  4  4  4  4  4  4  4  4  4  4  4  4  4  4  4  4  4
+    ## [176]  4  4  4  4  4  4  4  4  4  4  4  4  4  3  3  3  3  3  3  3  3  3  3  3  3
+    ## [201]  3  3  3  3  3  3  3  3  3  3  3  3  3  3  3  3  3  3  3  2  2  2  2  2  2
+    ## [226]  2  2  2  2  2  2  2  2  2  2  2  2  2  2  2  2  2  2  2  2  2  2  1  1  1
+    ## [251]  1  1  1  1  1  1  1  1  1  1  1  1  1  1  1  1  1  1  1  1  1  1  1  1  1
+    ## [276]  1  1  1 12 12 12 12 12 12 12 12 12 12 12 12 12 12 12 12 12 12 12 12 12 12
+    ## [301] 12 12 12 12 12 12 12 12 12 11 11 11 11 11 11 11 11 11 11 11 11 11 11 11 11
+    ## [326] 11 11 11 11 11 11 11 11 11 11 11 11 11 11 10 10 10 10 10 10 10 10 10 10 10
+    ## [351] 10 10 10 10 10 10 10 10 10 10 10 10 10 10 10 10 10 10 10 10  9  9  9  9  9
+    ## [376]  9  9  9  9  9  9  9  9  9  9  9  9  9  9  9  9  9  9  9  9  9  9  9  9  9
+    ## [401]  8  8  8  8  8  8  8  8  8  8  8  8  8  8  8  8  8  8  8  8  8  8  8  8  8
+    ## [426]  8  8  8  8  8  8  7  7  7  7  7  7  7  7  7  7  7  7  7  7  7  7  7  7  7
+    ## [451]  7  7  7  7  7  7  7  7  7  7  7  7  6  6  6  6  6  6  6  6  6  6  6  6  6
+    ## [476]  6  6  6  6  6  6  6  6  6  6  6  6  6  6  6  6  6  5  5  5  5  5  5  5  5
+    ## [501]  5  5  5  5  5  5  5  5  5  5  5  5  5  5  5  5  5  5  5  5  5  5  5  4  4
+    ## [526]  4  4  4  4  4  4  4  4  4  4  4  4  4  4  4  4  4  4  4  4  4  4  4  4  4
+    ## [551]  4  4  4  3  3  3  3  3  3  3  3  3  3  3  3  3  3  3  3  3  3  3  3  3  3
+    ## [576]  3  3  3  3  3  3  3  3  3  2  2  2  2  2  2  2  2  2  2  2  2  2  2  2  2
+    ## [601]  2  2  2  2  2  2  2  2  2  2  2  2  2  1  1  1  1  1  1  1  1  1  1
+
+``` r
+new_US_deaths_cases %>%
+  mutate(season = case_when(
+  month(submission_date) %in% c(9, 10, 11) ~ "Fall",
+  month(submission_date) %in% c(12, 1, 2) ~ "Winter",
+  month(submission_date) %in% c(3, 4, 5) ~ "Spring",
+  month(submission_date) %in% c(6, 7, 8) ~ "Summer"
+)) %>%
+  group_by(season) %>%
+  summarise(median_ncases = median(total_new_cases, na.rm = TRUE),
+            median_ndeaths = median(total_new_deaths, na.rm = TRUE),
+            mean_ncases = mean(total_new_cases, na.rm = TRUE),
+            mean_ndeaths = mean(total_new_deaths, na.rm = TRUE),
+            sd_ncases = sd(total_new_cases, na.rm = TRUE),
+            sd_ndeaths = sd(total_new_deaths, na.rm = TRUE),
+            min_ncases = min(total_new_cases, na.rm = TRUE),
+            max_ncases = max(total_new_cases, na.rm = TRUE),
+            iqr_ncases = IQR(total_new_cases, na.rm = TRUE))
+```
+
+    ## # A tibble: 4 × 10
+    ##   season median_ncases median_ndeaths mean_ncases mean_ndeaths sd_ncases
+    ##   <chr>          <dbl>          <dbl>       <dbl>        <dbl>     <dbl>
+    ## 1 Fall          86178             964      94742.        1125     50831.
+    ## 2 Spring        26539             663      32010.         780.    19628.
+    ## 3 Summer        45334.            708      55821.         719.    43211.
+    ## 4 Winter       114615            2275     111475.        1861.    92796.
+    ## # … with 4 more variables: sd_ndeaths <dbl>, min_ncases <dbl>,
+    ## #   max_ncases <dbl>, iqr_ncases <dbl>
+
+``` r
+new_US_deaths_cases %>%
+  mutate(season = case_when(
+  month(submission_date) %in% c(9, 10, 11) ~ "Fall",
+  month(submission_date) %in% c(12, 1, 2) ~ "Winter",
+  month(submission_date) %in% c(3, 4, 5) ~ "Spring",
+  month(submission_date) %in% c(6, 7, 8) ~ "Summer"
+)) %>%
+  ggplot(aes(x = total_new_cases / 10^3, 
+             y = season, 
+             fill = season)) +
+  geom_density_ridges(alpha = 0.2) +
+  labs(title = "Ridge plot of total new cases by season",
+       x = "New Cases (Thousands)",
+       y = "Season",
+       fill = "Season") +
+  theme_bw()
+```
+
+    ## Picking joint bandwidth of 16.5
+
+![](Scratchwork_files/figure-gfm/unnamed-chunk-22-1.png)<!-- -->
+
+``` r
+new_US_deaths_cases %>%
+  mutate(season = case_when(
+  month(submission_date) %in% c(9, 10, 11) ~ "Fall",
+  month(submission_date) %in% c(12, 1, 2) ~ "Winter",
+  month(submission_date) %in% c(3, 4, 5) ~ "Spring",
+  month(submission_date) %in% c(6, 7, 8) ~ "Summer"
+)) %>%
+  ggplot(aes(x = total_new_cases / 10^3, 
+             y = season, 
+             fill = season)) +
+  geom_boxplot() +
+  labs(title = "Ridge plot of total new cases by season",
+       x = "New Cases (Thousands)",
+       y = "Season",
+       fill = "Season") +
+  theme_bw()
+```
+
+![](Scratchwork_files/figure-gfm/unnamed-chunk-23-1.png)<!-- -->
