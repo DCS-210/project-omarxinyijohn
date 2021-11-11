@@ -1,6 +1,6 @@
 ---
-title: "Presentation title"
-subtitle: "Presentation subtitle (if any)"
+title: "DCS210 Final Project"
+subtitle: "Exploring COVID-19 Data"
 author: "omarxinyijohn <br> John Mieszczanski & Omar Sarr & Xinyi Zhang"
 institute: "Bates College"
 date: "`r Sys.Date()`"
@@ -13,8 +13,8 @@ output:
       highlightStyle: github
       highlightLines: true
       countIncrementalSlides: false
+      color: #000000
 ---
-
 ```{r load-packages, include = FALSE}
 library(tidyverse)
 library(tidymodels)
@@ -26,11 +26,12 @@ library(lubridate)
 library(devtools)
 library(dsbox)
 library(ggridges)
+library(openintro)
 ```
 
 ```{r setup, include = FALSE}
 # For better figure resolution
-knitr::opts_chunk$set(fig.retina = 3, dpi = 300, fig.width = 6, fig.asp = 0.618, out.width = "80%")
+#knitr::opts_chunk$set(fig.retina = 3, dpi = 300, fig.width = 6, fig.asp = 0.618, out.width = "80%")
 ```
 
 ```{r load-data, include = FALSE}
@@ -43,60 +44,92 @@ US_vaccinations <-
 
 ```{r, echo = FALSE}
 style_xaringan(
-  title_slide_background_image = "img/background.jpeg"
+  title_slide_background_color = "#000000",
+  title_slide_text_color = "#FFFFFF"
 )
 ```
 
---
-## Introduction
-
---
+### Introduction
 
 Reported first in December, 2019, the COVID-19 pandemic constitutes the largest global public health crisis in a century, with daunting health and socioeconomic challenges. In the United States alone, more than 700,000 people have lost their lives due to the public health crisis. The progress in vaccination rates, as well as the spread of Delta variant, added more nuances to the overall situation.
 
---
-
-## Overall Goal
-
---
+### Overall Goal
 
 In this project, we focus on the COVID-19 data in the U.S. We aim to explore:
 
---
-
-- the fluctuations of deaths and cases across time since December, 2019
-
---
-
-    - the potential correlation between seasons and deaths and cases
+- The fluctuations of deaths and cases across time since December, 2019
     
---
+- The potential correlation between seasons and deaths and cases
 
-    - the differences across states
+- The potential correlation between vaccination rates and deaths and cases across time
     
---
+- The differences in cases, deaths, and vaccinations across states
 
-- the potential correlation between vaccination rates and deaths and cases across time
-
---
-
-- the popularity of the main kinds of vaccines (J&J, Pfizer, Moderna) in different states
+- The popularity of the main kinds of vaccines (J&J, Pfizer, Moderna) in different states
 
 ---
 
-class: inverse, center, middle
+### COVID-19 Cases and Deaths - The Beginning
+On January 22nd, 2020, the CDC began tracking daily COVID19 cases and deaths
+across the United States and its territories. Eventually, on March 11th, 2020,
+WHO declared COVID-19 a global pandemic. This day also coincided with the NBA
+shutting down indefinitely. Two days later, Bates College announced they would 
+be sending us home!
 
---
+How do these two key dates compare the worst day(s) of the pandemic?
+```{r, echo = FALSE}
+new_US_deaths_cases <- US_deaths_cases %>%
+  filter(!(state %in% c("NYC", "PR", "GU",
+                           "VI", "MP", "RMI",
+                           "AS", "PW", "FSM"))) %>%
+  group_by(submission_date) %>%
+  summarise(total_new_cases = sum(new_case),
+            total_new_deaths = sum(new_death),
+            total_cases = sum(tot_cases),
+            total_deaths = sum(tot_death)) 
 
-## AN OVERLOOK
+new_US_deaths_cases$submission_date = as.Date(new_US_deaths_cases$submission_date,
+                                              format="%m/%d/%Y")
 
---
+new_US_deaths_cases <- new_US_deaths_cases %>%
+  arrange(desc(submission_date))
 
+new_US_deaths_cases %>%
+  filter(submission_date %in% c(as.Date("2020-01-22"), 
+                                as.Date("2020-03-11"), 
+                                as.Date("2020-03-13"), 
+                                as.Date("2021-01-06"),
+                                as.Date("2021-01-13"))) %>%
+  kable(format = "html")
+```
+
+```{r, echo = FALSE, include = FALSE}
+new_US_deaths_cases %>% 
+  slice_max(total_new_cases, n = 5) 
+
+max_cases_row <- new_US_deaths_cases %>% 
+  slice_max(total_new_cases, n = 1) 
+
+max_cases_date <- max_cases_row$submission_date
+
+max_cases_date
+```
+
+```{r, echo = FALSE, include = FALSE}
+new_US_deaths_cases %>%
+  slice_max(total_new_deaths, n = 5)
+
+max_deaths_row <- new_US_deaths_cases %>% 
+  slice_max(total_new_deaths, n = 1) 
+
+max_deaths_date <- max_deaths_row$submission_date
+
+max_deaths_date
+```
+---
 # How did the overall fluctuations in deaths & cases look like in the U.S.?
 
 ---
-
---
 
 ## Total Cases & New Cases
 
@@ -106,10 +139,6 @@ class: inverse, center, middle
 
 ---
 
-class: inverse, center, middle
-
---
-
 ## BREAKDOWN BY SEASONS
 
 --
@@ -118,10 +147,6 @@ class: inverse, center, middle
 
 ---
 
-class: inverse, center, middle
-
---
-
 ## ZOOM IN BY STATES
 
 --
@@ -129,10 +154,6 @@ class: inverse, center, middle
 # How do changes in cases & deaths differ across states?
 
 ---
-
-class: inverse, center, middle
-
---
 
 ## INTRODUCE ESSENTIAL FACTORS
 
@@ -156,10 +177,6 @@ class: inverse, center, middle
 
 ---
 
-class: inverse, center, middle
-
---
-
 ## COMBINE AND EXPLORE
 
 --
@@ -167,10 +184,6 @@ class: inverse, center, middle
 # Have vaccines reduced cases and/or deaths and if so, to what extent?
 
 ---
-
-class: inverse, center, middle
-
---
 
 ## ADD ANOTHER DIMENSION
 

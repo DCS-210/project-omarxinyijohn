@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="" xml:lang="">
   <head>
-    <title>Presentation title</title>
+    <title>DCS210 Final Project</title>
     <meta charset="utf-8" />
     <meta name="author" content="omarxinyijohn   John Mieszczanski &amp; Omar Sarr &amp; Xinyi Zhang" />
     <meta name="date" content="2021-11-11" />
@@ -12,8 +12,8 @@
     <textarea id="source">
 class: center, middle, inverse, title-slide
 
-# Presentation title
-## Presentation subtitle (if any)
+# DCS210 Final Project
+## Exploring COVID-19 Data
 ### omarxinyijohn <br> John Mieszczanski &amp; Omar Sarr &amp; Xinyi Zhang
 ### Bates College
 ### 2021-11-11
@@ -28,57 +28,90 @@ class: center, middle, inverse, title-slide
 
 
 
-
---
-## Introduction
-
---
+### Introduction
 
 Reported first in December, 2019, the COVID-19 pandemic constitutes the largest global public health crisis in a century, with daunting health and socioeconomic challenges. In the United States alone, more than 700,000 people have lost their lives due to the public health crisis. The progress in vaccination rates, as well as the spread of Delta variant, added more nuances to the overall situation.
 
---
-
-## Overall Goal
-
---
+### Overall Goal
 
 In this project, we focus on the COVID-19 data in the U.S. We aim to explore:
 
---
-
-- the fluctuations of deaths and cases across time since December, 2019
-
---
-
-    - the potential correlation between seasons and deaths and cases
+- The fluctuations of deaths and cases across time since December, 2019
     
---
+- The potential correlation between seasons and deaths and cases
 
-    - the differences across states
+- The potential correlation between vaccination rates and deaths and cases across time
     
---
+- The differences in cases, deaths, and vaccinations across states
 
-- the potential correlation between vaccination rates and deaths and cases across time
-
---
-
-- the popularity of the main kinds of vaccines (J&amp;J, Pfizer, Moderna) in different states
+- The popularity of the main kinds of vaccines (J&amp;J, Pfizer, Moderna) in different states
 
 ---
 
-class: inverse, center, middle
+### COVID-19 Cases and Deaths - The Beginning
+On January 22nd, 2020, the CDC began tracking daily COVID19 cases and deaths
+across the United States and its territories. Eventually, on March 11th, 2020,
+WHO declared COVID-19 a global pandemic. This day also coincided with the NBA
+shutting down indefinitely. Two days later, Bates College announced they would 
+be sending us home!
 
---
+How do these two key dates compare the worst day(s) of the pandemic?
+&lt;table&gt;
+ &lt;thead&gt;
+  &lt;tr&gt;
+   &lt;th style="text-align:left;"&gt; submission_date &lt;/th&gt;
+   &lt;th style="text-align:right;"&gt; total_new_cases &lt;/th&gt;
+   &lt;th style="text-align:right;"&gt; total_new_deaths &lt;/th&gt;
+   &lt;th style="text-align:right;"&gt; total_cases &lt;/th&gt;
+   &lt;th style="text-align:right;"&gt; total_deaths &lt;/th&gt;
+  &lt;/tr&gt;
+ &lt;/thead&gt;
+&lt;tbody&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:left;"&gt; 2021-01-13 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 232342 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 4095 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 22914389 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 388855 &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:left;"&gt; 2021-01-06 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 286542 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 4040 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 21284925 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 363853 &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:left;"&gt; 2020-03-13 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 1211 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 10 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 6750 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 296 &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:left;"&gt; 2020-03-11 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 796 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 14 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 4464 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 279 &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:left;"&gt; 2020-01-22 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 7 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 0 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 7 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 0 &lt;/td&gt;
+  &lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
 
-## AN OVERLOOK
 
---
 
+
+---
 # How did the overall fluctuations in deaths &amp; cases look like in the U.S.?
 
 ---
-
---
 
 ## Total Cases &amp; New Cases
 
@@ -88,10 +121,6 @@ class: inverse, center, middle
 
 ---
 
-class: inverse, center, middle
-
---
-
 ## BREAKDOWN BY SEASONS
 
 --
@@ -100,10 +129,6 @@ class: inverse, center, middle
 
 ---
 
-class: inverse, center, middle
-
---
-
 ## ZOOM IN BY STATES
 
 --
@@ -111,10 +136,6 @@ class: inverse, center, middle
 # How do changes in cases &amp; deaths differ across states?
 
 ---
-
-class: inverse, center, middle
-
---
 
 ## INTRODUCE ESSENTIAL FACTORS
 
@@ -138,10 +159,6 @@ class: inverse, center, middle
 
 ---
 
-class: inverse, center, middle
-
---
-
 ## COMBINE AND EXPLORE
 
 --
@@ -149,10 +166,6 @@ class: inverse, center, middle
 # Have vaccines reduced cases and/or deaths and if so, to what extent?
 
 ---
-
-class: inverse, center, middle
-
---
 
 ## ADD ANOTHER DIMENSION
 
@@ -223,7 +236,7 @@ glance(model)
 
 
 
-&lt;img src="presentation_files/figure-html/plot-iris-1.png" width="80%" /&gt;
+![](presentation_files/figure-html/plot-iris-1.png)&lt;!-- --&gt;
 
 ---
 
@@ -234,7 +247,7 @@ glance(model)
 - goes here
 ]
 .pull-right[
-&lt;img src="presentation_files/figure-html/unnamed-chunk-2-1.png" width="100%" /&gt;
+&lt;img src="presentation_files/figure-html/unnamed-chunk-5-1.png" width="100%" /&gt;
 ]
 
 ---
@@ -353,7 +366,8 @@ Limitations:
 "ratio": "16:9",
 "highlightStyle": "github",
 "highlightLines": true,
-"countIncrementalSlides": false
+"countIncrementalSlides": false,
+"color": null
 });
 if (window.HTMLWidgets) slideshow.on('afterShowSlide', function (slide) {
   window.dispatchEvent(new Event('resize'));

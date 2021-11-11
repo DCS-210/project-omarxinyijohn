@@ -115,6 +115,13 @@ new_US_deaths_cases <- new_US_deaths_cases %>%
   arrange(desc(submission_date))
 
 new_US_deaths_cases
+
+new_US_deaths_cases %>%
+  filter(submission_date %in% c(as.Date("2020-01-22"), 
+                                as.Date("2020-03-11"), 
+                                as.Date("2020-03-13"), 
+                                as.Date("2021-01-06"),
+                                as.Date("2021-01-23")))
 ```
 
 ```{r}
