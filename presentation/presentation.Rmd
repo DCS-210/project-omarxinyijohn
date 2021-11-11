@@ -1,8 +1,8 @@
 ---
 title: "Presentation title"
 subtitle: "Presentation subtitle (if any)"
-author: "Team name <br> Names of team members"
-institute: "University of Edinburgh"
+author: "omarxinyijohn <br> John Mieszczanski & Omar Sarr & Xinyi Zhang"
+institute: "Bates College"
 date: "`r Sys.Date()`"
 output:
   xaringan::moon_reader:
@@ -16,65 +16,173 @@ output:
 ---
 
 ```{r load-packages, include = FALSE}
-# Add any additional packages you need to this chunk
 library(tidyverse)
 library(tidymodels)
 library(palmerpenguins)
 library(knitr)
 library(xaringanthemer)
+library(broom)
+library(lubridate)
+library(devtools)
+library(dsbox)
+library(ggridges)
 ```
 
-```{r setup, include=FALSE}
+```{r setup, include = FALSE}
 # For better figure resolution
 knitr::opts_chunk$set(fig.retina = 3, dpi = 300, fig.width = 6, fig.asp = 0.618, out.width = "80%")
 ```
 
-```{r load-data, include=FALSE}
-# Load your data here
+```{r load-data, include = FALSE}
+US_deaths_cases <- 
+  read_csv("/cloud/project/data/United_States_COVID-19_Cases_and_Deaths_by_State_over_Time.csv")
+
+US_vaccinations <- 
+  read_csv("/cloud/project/data/COVID-19_Vaccinations_in_the_United_States_Jurisdiction.csv")
 ```
 
-```{r}
+```{r, echo = FALSE}
 style_xaringan(
-  title_slide_background_image = "img/confetti.jpg"
+  title_slide_background_image = "img/background.jpeg"
 )
 ```
 
+--
+## Introduction
 
-class: center, middle
+--
 
-## A statement of the overall goal / research question
+Reported first in December, 2019, the COVID-19 pandemic constitutes the largest global public health crisis in a century, with daunting health and socioeconomic challenges. In the United States alone, more than 700,000 people have lost their lives due to the public health crisis. The progress in vaccination rates, as well as the spread of Delta variant, added more nuances to the overall situation.
+
+--
+
+## Overall Goal
+
+--
+
+In this project, we focus on the COVID-19 data in the U.S. We aim to explore:
+
+--
+
+- the fluctuations of deaths and cases across time since December, 2019
+
+--
+
+    - the potential correlation between seasons and deaths and cases
+    
+--
+
+    - the differences across states
+    
+--
+
+- the potential correlation between vaccination rates and deaths and cases across time
+
+--
+
+- the popularity of the main kinds of vaccines (J&J, Pfizer, Moderna) in different states
 
 ---
 
 class: inverse, center, middle
 
-# Section title
+--
+
+## AN OVERLOOK
+
+--
+
+# How did the overall fluctuations in deaths & cases look like in the U.S.?
 
 ---
 
-# Hello World
+--
 
-- Click the `Knit` button to compile your presentation
+## Total Cases & New Cases
 
-- Make sure to commit and push all resulting files to your GitHub repo
+--
+
+## Total Deaths & New Deaths
 
 ---
 
-class: inverse, middle, center
+class: inverse, center, middle
 
-# Using xaringan
+--
+
+## BREAKDOWN BY SEASONS
+
+--
+
+# Are there any seasonal changes in cases & deaths?
+
+---
+
+class: inverse, center, middle
+
+--
+
+## ZOOM IN BY STATES
+
+--
+
+# How do changes in cases & deaths differ across states?
+
+---
+
+class: inverse, center, middle
+
+--
+
+## INTRODUCE ESSENTIAL FACTORS
+
+--
+
+# How did the overall vaccinations look like in the U.S.?
+
+---
+
+--
+
+## Number of Vaccinated People
+
+--
+
+## Proportion of Vaccinated People
+
+--
+
+## Differences across Age Groups
+
+---
+
+class: inverse, center, middle
+
+--
+
+## COMBINE AND EXPLORE
+
+--
+
+# Have vaccines reduced cases and/or deaths and if so, to what extent?
+
+---
+
+class: inverse, center, middle
+
+--
+
+## ADD ANOTHER DIMENSION
+
+--
+
+# Which vaccines are more popular in certain states (J&J, Pfizer, Moderna)?
 
 ---
 
 # xaringan
 
 - The presentation is created using the `xaringan` package
-
-- Use `---` to separate slides and `--` for incremental builds
-
---
-
-- Like this
 
 ---
 

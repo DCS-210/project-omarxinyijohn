@@ -3,9 +3,9 @@
   <head>
     <title>Presentation title</title>
     <meta charset="utf-8" />
-    <meta name="author" content="Team name   Names of team members" />
-    <meta name="date" content="2020-11-24" />
-    <script src="libs/header-attrs-2.5.3/header-attrs.js"></script>
+    <meta name="author" content="omarxinyijohn   John Mieszczanski &amp; Omar Sarr &amp; Xinyi Zhang" />
+    <meta name="date" content="2021-11-11" />
+    <script src="libs/header-attrs-2.11/header-attrs.js"></script>
     <link rel="stylesheet" href="xaringan-themer.css" type="text/css" />
   </head>
   <body>
@@ -14,9 +14,9 @@ class: center, middle, inverse, title-slide
 
 # Presentation title
 ## Presentation subtitle (if any)
-### Team name <br> Names of team members
-### University of Edinburgh
-### 2020-11-24
+### omarxinyijohn <br> John Mieszczanski &amp; Omar Sarr &amp; Xinyi Zhang
+### Bates College
+### 2021-11-11
 
 ---
 
@@ -28,48 +28,143 @@ class: center, middle, inverse, title-slide
 
 
 
-```r
-style_xaringan(
-  title_slide_background_image = "img/confetti.jpg"
-)
-```
 
+--
+## Introduction
 
-class: center, middle
+--
 
-## A statement of the overall goal / research question
+Reported first in December, 2019, the COVID-19 pandemic constitutes the largest global public health crisis in a century, with daunting health and socioeconomic challenges. In the United States alone, more than 700,000 people have lost their lives due to the public health crisis. The progress in vaccination rates, as well as the spread of Delta variant, added more nuances to the overall situation.
+
+--
+
+## Overall Goal
+
+--
+
+In this project, we focus on the COVID-19 data in the U.S. We aim to explore:
+
+--
+
+- the fluctuations of deaths and cases across time since December, 2019
+
+--
+
+    - the potential correlation between seasons and deaths and cases
+    
+--
+
+    - the differences across states
+    
+--
+
+- the potential correlation between vaccination rates and deaths and cases across time
+
+--
+
+- the popularity of the main kinds of vaccines (J&amp;J, Pfizer, Moderna) in different states
 
 ---
 
 class: inverse, center, middle
 
-# Section title
+--
+
+## AN OVERLOOK
+
+--
+
+# How did the overall fluctuations in deaths &amp; cases look like in the U.S.?
 
 ---
 
-# Hello World
+--
 
-- Click the `Knit` button to compile your presentation
+## Total Cases &amp; New Cases
 
-- Make sure to commit and push all resulting files to your GitHub repo
+--
+
+## Total Deaths &amp; New Deaths
 
 ---
 
-class: inverse, middle, center
+class: inverse, center, middle
 
-# Using xaringan
+--
+
+## BREAKDOWN BY SEASONS
+
+--
+
+# Are there any seasonal changes in cases &amp; deaths?
+
+---
+
+class: inverse, center, middle
+
+--
+
+## ZOOM IN BY STATES
+
+--
+
+# How do changes in cases &amp; deaths differ across states?
+
+---
+
+class: inverse, center, middle
+
+--
+
+## INTRODUCE ESSENTIAL FACTORS
+
+--
+
+# How did the overall vaccinations look like in the U.S.?
+
+---
+
+--
+
+## Number of Vaccinated People
+
+--
+
+## Proportion of Vaccinated People
+
+--
+
+## Differences across Age Groups
+
+---
+
+class: inverse, center, middle
+
+--
+
+## COMBINE AND EXPLORE
+
+--
+
+# Have vaccines reduced cases and/or deaths and if so, to what extent?
+
+---
+
+class: inverse, center, middle
+
+--
+
+## ADD ANOTHER DIMENSION
+
+--
+
+# Which vaccines are more popular in certain states (J&amp;J, Pfizer, Moderna)?
 
 ---
 
 # xaringan
 
 - The presentation is created using the `xaringan` package
-
-- Use `---` to separate slides and `--` for incremental builds
-
---
-
-- Like this
 
 ---
 
@@ -103,7 +198,7 @@ tidy(model)
 ```
 
 ```
-## # A tibble: 2 x 5
+## # A tibble: 2 × 5
 ##   term        estimate std.error statistic  p.value
 ##   &lt;chr&gt;          &lt;dbl&gt;     &lt;dbl&gt;     &lt;dbl&gt;    &lt;dbl&gt;
 ## 1 (Intercept)   -17.6      6.76      -2.60 1.23e- 2
@@ -115,7 +210,7 @@ glance(model)
 ```
 
 ```
-## # A tibble: 1 x 12
+## # A tibble: 1 × 12
 ##   r.squared adj.r.squared sigma statistic  p.value    df logLik   AIC   BIC
 ##       &lt;dbl&gt;         &lt;dbl&gt; &lt;dbl&gt;     &lt;dbl&gt;    &lt;dbl&gt; &lt;dbl&gt;  &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt;
 ## 1     0.651         0.644  15.4      89.6 1.49e-12     1  -207.  419.  425.
