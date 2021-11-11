@@ -8,6 +8,8 @@ library(lubridate)
 library(devtools)
 library(dsbox)
 library(ggridges)
+library(tidymodels)
+library(openintro)
 ```
 
 ``` r
@@ -835,10 +837,71 @@ merged_US_data
     ## #   total_deaths <dbl>
 
 ``` r
-ccf_values3 = ccf(merged_US_data$Series_Complete_Yes, merged_US_data$total_cases, lag.max = 150)
+coeff <- 1
+
+merged_US_data %>%
+  ggplot(aes(x = Date)) +
+  geom_point(aes(y = total_deaths / 10^3), color = "red") + 
+  geom_point(aes(y = Series_Complete_Yes / 10^6), color = "blue") +
+  scale_color_manual(name = "Data", values = c("total_deaths" = "red", "Series_Complete_Yes" = "blue")) +
+  scale_y_continuous(
+    name = "Total # of COVID Deaths (Thousands)",
+    sec.axis = sec_axis(~.*coeff, 
+                        name = "Total # of People Fully Vaccinated (Millions)",
+                        scales::pretty_breaks(n = 10)),
+    breaks = scales::pretty_breaks(n = 10)
+  ) +
+  labs(title = "Total Fully Vaccinated and Total Deaths vs. Time",
+       x = "Date",
+       color = "Color") +
+  theme_bw() +
+  theme(axis.line = element_line(colour = "black"),
+        axis.text.x = element_text(color = "grey20", 
+                                   size = 15, 
+                                   angle = 0, 
+                                   hjust = .5, 
+                                   vjust = .5, 
+                                   face = "plain"),
+        axis.text.y = element_text(color = "grey20", 
+                                   size = 15, 
+                                   angle = 0, 
+                                   hjust = .5, 
+                                   vjust = .5, 
+                                   face = "plain"),
+        axis.title.x = element_text(color = "grey20", 
+                                    size = 30, 
+                                    angle = 0, 
+                                    hjust = .5, 
+                                    vjust = 0, 
+                                    face = "plain"),
+        axis.title.y.left = element_text(color = "grey20", 
+                                    size = 25, 
+                                    angle = 90, 
+                                    hjust = .5, 
+                                    vjust = 1, 
+                                    face = "plain"),
+        axis.title.y.right = element_text(color = "grey20", 
+                                    size = 25, 
+                                    angle = 270, 
+                                    hjust = .5, 
+                                    vjust = 1, 
+                                    face = "plain"),
+        plot.title = element_text(color = "grey20", 
+                                    size = 30, 
+                                    angle = 0, 
+                                    hjust = .5, 
+                                    vjust = .5, 
+                                    face = "plain")) +
+  scale_x_date(date_breaks = "1 month", date_labels =  "%b %Y")
 ```
 
 ![](Scratchwork_files/figure-gfm/unnamed-chunk-17-1.png)<!-- -->
+
+``` r
+ccf_values3 = ccf(merged_US_data$Series_Complete_Yes, merged_US_data$total_cases, lag.max = 150)
+```
+
+![](Scratchwork_files/figure-gfm/unnamed-chunk-18-1.png)<!-- -->
 
 ``` r
 ccf_values3
@@ -908,7 +971,7 @@ ccf_values3
 ccf_values4 = ccf(merged_US_data$Series_Complete_Yes, merged_US_data$total_deaths, lag.max = 250)
 ```
 
-![](Scratchwork_files/figure-gfm/unnamed-chunk-18-1.png)<!-- -->
+![](Scratchwork_files/figure-gfm/unnamed-chunk-19-1.png)<!-- -->
 
 ``` r
 ccf_values4
@@ -1000,7 +1063,7 @@ ccf_values4
 ccf_values4 = ccf(merged_US_data$Series_Complete_Pop_Pct, merged_US_data$total_new_deaths, lag.max = 150)
 ```
 
-![](Scratchwork_files/figure-gfm/unnamed-chunk-19-1.png)<!-- -->
+![](Scratchwork_files/figure-gfm/unnamed-chunk-20-1.png)<!-- -->
 
 ``` r
 ccf_values4
@@ -1097,13 +1160,17 @@ month(new_US_deaths_cases$submission_date)
     ## [601]  2  2  2  2  2  2  2  2  2  2  2  2  2  1  1  1  1  1  1  1  1  1  1
 
 ``` r
-new_US_deaths_cases %>%
+seasons_deaths_cases <- new_US_deaths_cases %>%
   mutate(season = case_when(
   month(submission_date) %in% c(9, 10, 11) ~ "Fall",
   month(submission_date) %in% c(12, 1, 2) ~ "Winter",
   month(submission_date) %in% c(3, 4, 5) ~ "Spring",
   month(submission_date) %in% c(6, 7, 8) ~ "Summer"
-)) %>%
+))
+```
+
+``` r
+seasons_deaths_cases %>%
   group_by(season) %>%
   summarise(median_ncases = median(total_new_cases, na.rm = TRUE),
             median_ndeaths = median(total_new_deaths, na.rm = TRUE),
@@ -1127,45 +1194,124 @@ new_US_deaths_cases %>%
     ## #   max_ncases <dbl>, iqr_ncases <dbl>
 
 ``` r
-new_US_deaths_cases %>%
-  mutate(season = case_when(
-  month(submission_date) %in% c(9, 10, 11) ~ "Fall",
-  month(submission_date) %in% c(12, 1, 2) ~ "Winter",
-  month(submission_date) %in% c(3, 4, 5) ~ "Spring",
-  month(submission_date) %in% c(6, 7, 8) ~ "Summer"
-)) %>%
+seasons_deaths_cases %>%
   ggplot(aes(x = total_new_cases / 10^3, 
-             y = season, 
+             y = reorder(season, total_new_cases), 
              fill = season)) +
   geom_density_ridges(alpha = 0.2) +
   labs(title = "Ridge plot of total new cases by season",
        x = "New Cases (Thousands)",
        y = "Season",
        fill = "Season") +
-  theme_bw()
+  theme_bw() +
+  theme(axis.line = element_line(colour = "black"),
+        axis.text.x = element_text(color = "grey20", 
+                                   size = 15, 
+                                   angle = 0, 
+                                   hjust = .5, 
+                                   vjust = .5, 
+                                   face = "plain"),
+        axis.text.y = element_text(color = "grey20", 
+                                   size = 15, 
+                                   angle = 0, 
+                                   hjust = .5, 
+                                   vjust = .5, 
+                                   face = "plain"),  
+        axis.title.x = element_text(color = "grey20", 
+                                    size = 30, 
+                                    angle = 0, 
+                                    hjust = .5, 
+                                    vjust = 0, 
+                                    face = "plain"),
+        axis.title.y = element_text(color = "grey20", 
+                                    size = 30, 
+                                    angle = 90, 
+                                    hjust = .5, 
+                                    vjust = 1, 
+                                    face = "plain"),
+        plot.title = element_text(color = "grey20", 
+                                    size = 30, 
+                                    angle = 0, 
+                                    hjust = .5, 
+                                    vjust = .5, 
+                                    face = "plain")) +
+  scale_x_continuous(breaks = scales::pretty_breaks(n = 5))
 ```
 
     ## Picking joint bandwidth of 16.5
 
-![](Scratchwork_files/figure-gfm/unnamed-chunk-22-1.png)<!-- -->
+![](Scratchwork_files/figure-gfm/unnamed-chunk-24-1.png)<!-- -->
 
 ``` r
-new_US_deaths_cases %>%
-  mutate(season = case_when(
-  month(submission_date) %in% c(9, 10, 11) ~ "Fall",
-  month(submission_date) %in% c(12, 1, 2) ~ "Winter",
-  month(submission_date) %in% c(3, 4, 5) ~ "Spring",
-  month(submission_date) %in% c(6, 7, 8) ~ "Summer"
-)) %>%
+seasons_deaths_cases %>%
   ggplot(aes(x = total_new_cases / 10^3, 
-             y = season, 
+             y = reorder(season, total_new_cases), 
              fill = season)) +
   geom_boxplot() +
-  labs(title = "Ridge plot of total new cases by season",
-       x = "New Cases (Thousands)",
+  labs(title = "Ridge Plot Of Total Daily New Cases By Season",
+       x = "Daily New Cases (Thousands)",
        y = "Season",
        fill = "Season") +
-  theme_bw()
+  theme_bw() +
+  theme(axis.line = element_line(colour = "black"),
+        axis.text.x = element_text(color = "grey20", 
+                                   size = 15, 
+                                   angle = 0, 
+                                   hjust = .5, 
+                                   vjust = .5, 
+                                   face = "plain"),
+        axis.text.y = element_text(color = "grey20", 
+                                   size = 15, 
+                                   angle = 0, 
+                                   hjust = .5, 
+                                   vjust = .5, 
+                                   face = "plain"),  
+        axis.title.x = element_text(color = "grey20", 
+                                    size = 30, 
+                                    angle = 0, 
+                                    hjust = .5, 
+                                    vjust = 0, 
+                                    face = "plain"),
+        axis.title.y = element_text(color = "grey20", 
+                                    size = 30, 
+                                    angle = 90, 
+                                    hjust = .5, 
+                                    vjust = 1, 
+                                    face = "plain"),
+        plot.title = element_text(color = "grey20", 
+                                    size = 30, 
+                                    angle = 0, 
+                                    hjust = .5, 
+                                    vjust = .5, 
+                                    face = "plain")) +
+  scale_x_continuous(breaks = scales::pretty_breaks(n = 5))
 ```
 
-![](Scratchwork_files/figure-gfm/unnamed-chunk-23-1.png)<!-- -->
+![](Scratchwork_files/figure-gfm/unnamed-chunk-25-1.png)<!-- -->
+
+``` r
+season_lreg <- linear_reg() %>%
+  set_engine("lm") %>%
+  fit(total_new_cases ~ factor(season), data = seasons_deaths_cases)
+
+season_lreg
+```
+
+    ## parsnip model object
+    ## 
+    ## Fit time:  4ms 
+    ## 
+    ## Call:
+    ## stats::lm(formula = total_new_cases ~ factor(season), data = data)
+    ## 
+    ## Coefficients:
+    ##          (Intercept)  factor(season)Spring  factor(season)Summer  
+    ##                94742                -62732                -38921  
+    ## factor(season)Winter  
+    ##                16734
+
+``` r
+glance(season_lreg)$r.squared
+```
+
+    ## [1] 0.2460217
