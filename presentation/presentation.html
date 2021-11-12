@@ -4,7 +4,7 @@
     <title>DCS210 Final Project</title>
     <meta charset="utf-8" />
     <meta name="author" content="omarxinyijohn   John Mieszczanski &amp; Omar Sarr &amp; Xinyi Zhang" />
-    <meta name="date" content="2021-11-11" />
+    <meta name="date" content="2021-11-12" />
     <script src="libs/header-attrs-2.11/header-attrs.js"></script>
     <link rel="stylesheet" href="xaringan-themer.css" type="text/css" />
   </head>
@@ -16,7 +16,7 @@ class: center, middle, inverse, title-slide
 ## Exploring COVID-19 Data
 ### omarxinyijohn <br> John Mieszczanski &amp; Omar Sarr &amp; Xinyi Zhang
 ### Bates College
-### 2021-11-11
+### 2021-11-12
 
 ---
 
@@ -109,40 +109,111 @@ How do these two key dates compare the worst day(s) of the pandemic?
 
 
 ---
-# How did the overall fluctuations in deaths &amp; cases look like in the U.S.?
+&lt;html&gt;
+&lt;head&gt;
+&lt;style&gt;
+p {margin-top: 0.5em ;
+   margin-bottom: 1em ;}
+h3 {margin-top: 0.5em ;
+   margin-bottom: 0.5em ;}
+&lt;/style&gt;
+&lt;/head&gt;
+&lt;body&gt;
+&lt;h3&gt;COVID-19 Cases and Deaths - How did they evolve with time?&lt;/h3&gt;
+&lt;p&gt;Throughout this pandemic, we have experienced periods of low cases and deaths and periods of high cases and deaths. These ebbs and flows are typically called "waves". Our first goal was to visualize the "waves" of the pandemic - when were things the worst and when did things seem to be better?&lt;/p&gt;
+&lt;/body&gt;
+&lt;/html&gt;
 
+![](presentation_files/figure-html/unnamed-chunk-5-1.png)&lt;!-- --&gt;
 ---
-
-## Total Cases &amp; New Cases
-
---
-
-## Total Deaths &amp; New Deaths
-
+&lt;html&gt;
+&lt;head&gt;
+&lt;style&gt;
+p {margin-top: 0.5em ;
+   margin-bottom: 1em ;}
+h3 {margin-top: 0.5em ;
+   margin-bottom: 0.5em ;}
+&lt;/style&gt;
+&lt;/head&gt;
+&lt;body&gt;
+&lt;h3&gt;COVID-19 Cases and Deaths - How did they evolve with time?&lt;/h3&gt;
+&lt;/body&gt;
+&lt;/html&gt;
+![](presentation_files/figure-html/unnamed-chunk-6-1.png)&lt;!-- --&gt;
 ---
+### COVID-19 Cases and Deaths - What is the correlation?
+Typically, when we are comparing two variables `\(X\)` and `\(Y\)`, we calculate the 
+correlation coefficient 
+`$$\rho = \frac{\sigma_{XY}}{\sigma_X\sigma_Y}$$` 
+The correlation coefficient describes how one variable moves in relation to 
+another. When dealing with time series data and both `\(X\)` and `\(Y\)` 
+are functions of time, the time series `\(Y_t\)` might be related to past lags of 
+the time series `\(X_t\)`. In other words, if our time series is discrete 
+(it must be), we want to determine the relationship between `\(X_{t + h}\)` and
+`\(Y_t\)` for `\(h = 0, \pm 1, \pm 2, ...\)`. The **cross correlation coefficient** is 
+thus given by
+`$$\rho = \frac{\sigma_{X_{t + h}Y_t}}{\sigma_{X_{t + h}}\sigma_{Y_t}}$$` 
+Two things to note :
 
-## BREAKDOWN BY SEASONS
+- When one or more `\(X_{t + h}\)`, with `\(h\)` *negative*, are predictors of `\(Y_t\)`, 
+it is sometimes said that **x leads y**
 
---
+- When one or more `\(X_{t + h}\)`, with `\(h\)` *positive*, are predictors of `\(Y_t\)`, 
+it is sometimes said that **x lags y** `\(^*\)`
 
-# Are there any seasonal changes in cases &amp; deaths?
-
+.footnote[
+`\(^*\)` https://online.stat.psu.edu/stat510/lesson/8/8.2
+]
 ---
+### COVID-19 Cases and Deaths - What is the correlation?
+Before we use the R `ccf()` function, let's take a look at the relationship between
+cases and deaths with no lag.
 
-## ZOOM IN BY STATES
-
---
-
-# How do changes in cases &amp; deaths differ across states?
-
+![](presentation_files/figure-html/unnamed-chunk-7-1.png)&lt;!-- --&gt;
 ---
+### COVID-19 Cases and Deaths - What is the correlation?
+Before we use the R `ccf()` function, let's take a look at the relationship between
+cases and deaths with no lag:
 
-## INTRODUCE ESSENTIAL FACTORS
 
---
 
-# How did the overall vaccinations look like in the U.S.?
+![](presentation_files/figure-html/unnamed-chunk-9-1.png)&lt;!-- --&gt;
+---
+### COVID-19 Cases and Deaths - What is the correlation?
+Results from the linear regression:
 
+```
+## parsnip model object
+## 
+## Fit time:  2ms 
+## 
+## Call:
+## stats::lm(formula = total_new_deaths ~ total_new_cases, data = data)
+## 
+## Coefficients:
+##     (Intercept)  total_new_cases  
+##       274.67437          0.01146
+```
+
+```
+## # A tibble: 1 × 12
+##   r.squared adj.r.squared sigma statistic   p.value    df logLik   AIC   BIC
+##       &lt;dbl&gt;         &lt;dbl&gt; &lt;dbl&gt;     &lt;dbl&gt;     &lt;dbl&gt; &lt;dbl&gt;  &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt;
+## 1     0.673         0.673  500.     1279. 5.83e-153     1 -4755. 9515. 9529.
+## # … with 3 more variables: deviance &lt;dbl&gt;, df.residual &lt;int&gt;, nobs &lt;int&gt;
+```
+
+The linear model is given by `y = 0.01146x + 274.67437`. This tells us that for 
+each additionally daily case, we expect the number of daily deaths to increase on 
+average by `0.01146`. Additionally, we can see `\(R^2 = 0.673\)`, which indicates 
+that only about 67.3% of the variation in the daily new deaths is dependent on 
+daily new cases.
+---
+### COVID-19 Cases and Deaths - What is the correlation?
+![](presentation_files/figure-html/unnamed-chunk-11-1.png)&lt;!-- --&gt;
+---
+### COVID-19 Cases and Deaths - What is the correlation?
+![](presentation_files/figure-html/unnamed-chunk-12-1.png)&lt;!-- --&gt;
 ---
 
 --
@@ -247,7 +318,7 @@ glance(model)
 - goes here
 ]
 .pull-right[
-&lt;img src="presentation_files/figure-html/unnamed-chunk-5-1.png" width="100%" /&gt;
+&lt;img src="presentation_files/figure-html/unnamed-chunk-13-1.png" width="100%" /&gt;
 ]
 
 ---

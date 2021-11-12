@@ -160,9 +160,41 @@ x
 
 ```{r}
 ccf_values1 = ccf(new_US_deaths_cases$total_new_cases, new_US_deaths_cases$total_new_deaths, lag.max = 100)
-ccf_values1
+ccf_values1 
+
 
 # https://online.stat.psu.edu/stat510/lesson/8/8.2
+```
+
+```{r}
+xcf_plot <- function(df, x, y, title = "Cross Correlation"){
+  df_x <- eval(substitute(x), df)
+  df_y <- eval(substitute(y), df)
+  ccf.object <- ccf(df_x, df_y, plot = FALSE, lag.max = 100)
+  output_table <- cbind(lag = ccf.object$lag, 
+                        x.corr = ccf.object$acf) %>%
+                          as_tibble() %>%
+                          mutate(cat = ifelse(x.corr > 0, "green", "red"))
+  output_table %>%
+    ggplot(aes(x = lag, y = x.corr)) +
+    geom_bar(stat = "identity", aes(fill = cat)) +
+    scale_fill_manual(values = c("#339933", "#cc0000")) +
+    ylab("Cross Correlation") +
+    xlab("Lag (days)") +
+    scale_y_continuous(limits = c(-1, 1)) +
+    theme_bw() + 
+    theme(legend.position = "none", 
+          plot.title = element_text(size = 10)) +
+    ggtitle(title) -> p
+}     
+
+# run the function
+plot1 <- xcf_plot(df = new_US_deaths_cases, 
+         x = new_US_deaths_cases$total_new_cases, 
+         y = new_US_deaths_cases$total_new_deaths, 
+         title = "Cross Correlation : Daily New Cases and Daily New Deaths")
+
+plot1
 ```
 
 ```{r}
