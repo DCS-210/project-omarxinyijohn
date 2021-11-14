@@ -4,8 +4,14 @@
     <title>DCS210 Final Project</title>
     <meta charset="utf-8" />
     <meta name="author" content="omarxinyijohn   John Mieszczanski &amp; Omar Sarr &amp; Xinyi Zhang" />
-    <meta name="date" content="2021-11-12" />
+    <meta name="date" content="2021-11-14" />
     <script src="libs/header-attrs-2.11/header-attrs.js"></script>
+    <script src="libs/core-js-2.5.3/shim.min.js"></script>
+    <script src="libs/react-17.0.0/react.min.js"></script>
+    <script src="libs/react-17.0.0/react-dom.min.js"></script>
+    <script src="libs/reactwidget-1.0.0/react-tools.js"></script>
+    <script src="libs/htmlwidgets-1.5.4/htmlwidgets.js"></script>
+    <script src="libs/reactable-binding-0.2.3/reactable.js"></script>
     <link rel="stylesheet" href="xaringan-themer.css" type="text/css" />
   </head>
   <body>
@@ -16,7 +22,7 @@ class: center, middle, inverse, title-slide
 ## Exploring COVID-19 Data
 ### omarxinyijohn <br> John Mieszczanski &amp; Omar Sarr &amp; Xinyi Zhang
 ### Bates College
-### 2021-11-12
+### 2021-11-14
 
 ---
 
@@ -56,54 +62,8 @@ shutting down indefinitely. Two days later, Bates College announced they would
 be sending us home!
 
 How do these two key dates compare the worst day(s) of the pandemic?
-&lt;table&gt;
- &lt;thead&gt;
-  &lt;tr&gt;
-   &lt;th style="text-align:left;"&gt; submission_date &lt;/th&gt;
-   &lt;th style="text-align:right;"&gt; total_new_cases &lt;/th&gt;
-   &lt;th style="text-align:right;"&gt; total_new_deaths &lt;/th&gt;
-   &lt;th style="text-align:right;"&gt; total_cases &lt;/th&gt;
-   &lt;th style="text-align:right;"&gt; total_deaths &lt;/th&gt;
-  &lt;/tr&gt;
- &lt;/thead&gt;
-&lt;tbody&gt;
-  &lt;tr&gt;
-   &lt;td style="text-align:left;"&gt; 2021-01-13 &lt;/td&gt;
-   &lt;td style="text-align:right;"&gt; 232342 &lt;/td&gt;
-   &lt;td style="text-align:right;"&gt; 4095 &lt;/td&gt;
-   &lt;td style="text-align:right;"&gt; 22914389 &lt;/td&gt;
-   &lt;td style="text-align:right;"&gt; 388855 &lt;/td&gt;
-  &lt;/tr&gt;
-  &lt;tr&gt;
-   &lt;td style="text-align:left;"&gt; 2021-01-06 &lt;/td&gt;
-   &lt;td style="text-align:right;"&gt; 286542 &lt;/td&gt;
-   &lt;td style="text-align:right;"&gt; 4040 &lt;/td&gt;
-   &lt;td style="text-align:right;"&gt; 21284925 &lt;/td&gt;
-   &lt;td style="text-align:right;"&gt; 363853 &lt;/td&gt;
-  &lt;/tr&gt;
-  &lt;tr&gt;
-   &lt;td style="text-align:left;"&gt; 2020-03-13 &lt;/td&gt;
-   &lt;td style="text-align:right;"&gt; 1211 &lt;/td&gt;
-   &lt;td style="text-align:right;"&gt; 10 &lt;/td&gt;
-   &lt;td style="text-align:right;"&gt; 6750 &lt;/td&gt;
-   &lt;td style="text-align:right;"&gt; 296 &lt;/td&gt;
-  &lt;/tr&gt;
-  &lt;tr&gt;
-   &lt;td style="text-align:left;"&gt; 2020-03-11 &lt;/td&gt;
-   &lt;td style="text-align:right;"&gt; 796 &lt;/td&gt;
-   &lt;td style="text-align:right;"&gt; 14 &lt;/td&gt;
-   &lt;td style="text-align:right;"&gt; 4464 &lt;/td&gt;
-   &lt;td style="text-align:right;"&gt; 279 &lt;/td&gt;
-  &lt;/tr&gt;
-  &lt;tr&gt;
-   &lt;td style="text-align:left;"&gt; 2020-01-22 &lt;/td&gt;
-   &lt;td style="text-align:right;"&gt; 7 &lt;/td&gt;
-   &lt;td style="text-align:right;"&gt; 0 &lt;/td&gt;
-   &lt;td style="text-align:right;"&gt; 7 &lt;/td&gt;
-   &lt;td style="text-align:right;"&gt; 0 &lt;/td&gt;
-  &lt;/tr&gt;
-&lt;/tbody&gt;
-&lt;/table&gt;
+<div id="htmlwidget-0fa126b858ddc9407ecb" class="reactable html-widget" style="width:auto;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-0fa126b858ddc9407ecb">{"x":{"tag":{"name":"Reactable","attribs":{"data":{"submission_date":["2021-01-13","2021-01-06","2020-03-13","2020-03-11","2020-01-22"],"total_new_cases":[232342,286542,1211,796,7],"total_new_deaths":[4095,4040,10,14,0],"total_cases":[22914389,21284925,6750,4464,7],"total_deaths":[388855,363853,296,279,0]},"columns":[{"accessor":"submission_date","name":"submission_date","type":"Date"},{"accessor":"total_new_cases","name":"total_new_cases","type":"numeric"},{"accessor":"total_new_deaths","name":"total_new_deaths","type":"numeric"},{"accessor":"total_cases","name":"total_cases","type":"numeric"},{"accessor":"total_deaths","name":"total_deaths","type":"numeric"}],"defaultPageSize":10,"paginationType":"numbers","showPageInfo":true,"minRows":1,"dataKey":"b6435a103110c66afc4fb2fd4955db14","key":"b6435a103110c66afc4fb2fd4955db14"},"children":[]},"class":"reactR_markup"},"evals":[],"jsHooks":[]}</script>
 
 
 
@@ -215,9 +175,32 @@ daily new cases.
 ### COVID-19 Cases and Deaths - What is the correlation?
 ![](presentation_files/figure-html/unnamed-chunk-12-1.png)&lt;!-- --&gt;
 ---
+### COVID-19 Cases and Deaths - What is the correlation?
+<div id="htmlwidget-7e4fa24e4d704f0eeb92" class="reactable html-widget" style="width:auto;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-7e4fa24e4d704f0eeb92">{"x":{"tag":{"name":"Reactable","attribs":{"data":{"lag":[-14,-13,-12,-11,-10,-9,-8,-7,-6,-5,-4,-3,-2,-1,0,1,2,3,4,5,6,7,8,9,10,11,12,13,14],"CCF":[0.615668424623971,0.606773140455285,0.59186688302889,0.593973717825131,0.618641552254152,0.659613299285235,0.70125876571578,0.722280253922383,0.708958451876537,0.687850806985028,0.687962957595549,0.711616677481224,0.754171830561287,0.799068675949353,0.820502227153397,0.796409771368472,0.763673282639324,0.752818541854009,0.768960473702557,0.803219475801107,0.840492750961459,0.852195623010247,0.828596579563542,0.79344775594735,0.779349918908669,0.787212753058398,0.815599374576751,0.847000704762521,0.855138637319276]},"columns":[{"accessor":"lag","name":"lag","type":"numeric"},{"accessor":"CCF","name":"CCF","type":"numeric"}],"defaultPageSize":10,"paginationType":"numbers","showPageInfo":true,"minRows":1,"dataKey":"73cb36252ca6b8200959be914ee4eb77","key":"73cb36252ca6b8200959be914ee4eb77"},"children":[]},"class":"reactR_markup"},"evals":[],"jsHooks":[]}</script>
+---
+### COVID-19 Vaccinations Over Time
+Now let's take a look at how the number people of vaccinated in the United States 
+has evolved with time:
 
---
 
+![](presentation_files/figure-html/unnamed-chunk-15-1.png)&lt;!-- --&gt;
+---
+### COVID-19 Vaccinations Over Time
+Although the total population of the US is only about ~55% vaccinated as of early 
+October, 2021, this does not paint a full picture. Let's break down this percentage
+by age group:
+
+![](presentation_files/figure-html/unnamed-chunk-16-1.png)&lt;!-- --&gt;
+---
+### Exploring the Relationship Between Vaccinations and Cases/Deaths
+Next, let's take a look at how vaccinations and deaths have evolved over time
+in conjunction with one another:
+
+
+
+![](presentation_files/figure-html/unnamed-chunk-18-1.png)&lt;!-- --&gt;
+---
 ## Number of Vaccinated People
 
 --
@@ -318,7 +301,7 @@ glance(model)
 - goes here
 ]
 .pull-right[
-&lt;img src="presentation_files/figure-html/unnamed-chunk-13-1.png" width="100%" /&gt;
+&lt;img src="presentation_files/figure-html/unnamed-chunk-19-1.png" width="100%" /&gt;
 ]
 
 ---

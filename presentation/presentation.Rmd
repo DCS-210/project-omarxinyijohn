@@ -30,6 +30,7 @@ library(openintro)
 library(sjPlot)
 library(sjmisc)
 library(sjlabelled)
+library(reactable)
 ```
 
 ```{r setup, include = FALSE}
@@ -103,7 +104,7 @@ new_US_deaths_cases %>%
                                 as.Date("2020-03-13"), 
                                 as.Date("2021-01-06"),
                                 as.Date("2021-01-13"))) %>%
-  kable(format = "html")
+  reactable()
 ```
 
 ```{r, echo = FALSE, include = FALSE}
@@ -464,8 +465,224 @@ plot2 <- xcf_plot(df = new_US_deaths_cases,
 plot2
 ```
 ---
+### COVID-19 Cases and Deaths - What is the correlation?
+```{r, echo = FALSE, fig.show='hide'}
+ccf_raw_data <- ccf(new_US_deaths_cases$total_new_cases, new_US_deaths_cases$total_new_deaths, plot = FALSE, lag.max = 14) 
 
---
+ccf_raw_data <- data.frame(lag = ccf_raw_data$lag, CCF = ccf_raw_data$acf)
+  
+reactable(ccf_raw_data)
+  
+#data.frame(lag = correlation$ccf$lag, CCF = correlation$ccf$acf)
+```
+---
+### COVID-19 Vaccinations Over Time
+Now let's take a look at how the number people of vaccinated in the United States 
+has evolved with time:
+```{r, echo = FALSE}
+new_US_vaccinations <- US_vaccinations %>%
+  select(Date, Location, Series_Complete_Yes, 
+         Series_Complete_Pop_Pct,
+         Series_Complete_12PlusPop_Pct,
+         Series_Complete_18PlusPop_Pct,
+         Series_Complete_65PlusPop_Pct,
+         Series_Complete_Janssen, Series_Complete_Moderna, 
+         Series_Complete_Pfizer, Series_Complete_Unk_Manuf) %>%
+  filter(Location %in% c("US"))
+
+new_US_vaccinations$Date = as.Date(new_US_vaccinations$Date,
+                                              format="%m/%d/%Y")
+```
+
+```{r, echo = FALSE, fig.width = 14, fig.height = 7}
+new_US_vaccinations %>%
+  filter(Series_Complete_Pop_Pct > 0) %>%
+  ggplot() +
+  geom_point(aes(x = Date, y = Series_Complete_Pop_Pct)) +
+  labs(title = "Percent of US Population Fully Vaccinated vs. Time",
+       x = "Date",
+       y = "Percent of US Population") +
+  theme_bw() +
+  theme(axis.line = element_line(colour = "black"),
+        axis.text.x = element_text(color = "grey20", 
+                                   size = 15, 
+                                   angle = 0, 
+                                   hjust = .5, 
+                                   vjust = .5, 
+                                   face = "plain"),
+        axis.text.y = element_text(color = "grey20", 
+                                   size = 15, 
+                                   angle = 0, 
+                                   hjust = .5, 
+                                   vjust = .5, 
+                                   face = "plain"),  
+        axis.title.x = element_text(color = "grey20", 
+                                    size = 30, 
+                                    angle = 0, 
+                                    hjust = .5, 
+                                    vjust = 0, 
+                                    face = "plain"),
+        axis.title.y = element_text(color = "grey20", 
+                                    size = 30, 
+                                    angle = 90, 
+                                    hjust = .5, 
+                                    vjust = 1, 
+                                    face = "plain"),
+        plot.title = element_text(color = "grey20", 
+                                    size = 30, 
+                                    angle = 0, 
+                                    hjust = .5, 
+                                    vjust = .5, 
+                                    face = "plain")) +
+  scale_x_date(date_breaks = "1 month", date_labels =  "%b %Y") +
+  scale_y_continuous(breaks = scales::pretty_breaks(n = 10))
+```
+---
+### COVID-19 Vaccinations Over Time
+Although the total population of the US is only about ~55% vaccinated as of early 
+October, 2021, this does not paint a full picture. Let's break down this percentage
+by age group:
+
+```{r, echo = FALSE, fig.width = 14, fig.height = 7}
+Pop_Pct.labs <- c("% Fully Vaccinated 12+", 
+                  "% Fully Vaccinated (Total Pop)",
+                  "% Fully Vaccinated 18+", 
+                  "% Fully Vaccinated 65+")
+names(Pop_Pct.labs) <- c("Series_Complete_12PlusPop_Pct", 
+                         "Series_Complete_Pop_Pct",
+                         "Series_Complete_18PlusPop_Pct",
+                         "Series_Complete_65PlusPop_Pct")
+
+new_US_vaccinations %>%
+  filter(Series_Complete_Yes > 0) %>%
+  pivot_longer(cols = c(Series_Complete_Pop_Pct,
+                        Series_Complete_12PlusPop_Pct,
+                        Series_Complete_18PlusPop_Pct,
+                        Series_Complete_65PlusPop_Pct),
+               names_to = "Pop_Pct_Type",
+               values_to = "Pop_Pct") %>%
+  ggplot() +
+  geom_point(aes(x = Date, y = Pop_Pct)) +
+  facet_wrap(~Pop_Pct_Type,
+             labeller = labeller(Pop_Pct_Type = Pop_Pct.labs)) + 
+  labs(title = "Percent of US Population Fully Vaccinated vs. Time",
+       subtitle = "Broken Down by Age Group",
+       x = "Date",
+       y = "Percent of US Population") +
+  theme_bw() +
+  theme(strip.text = element_text(size = 20),
+        axis.line = element_line(colour = "black"),
+        axis.text.x = element_text(color = "grey20", 
+                                   size = 15, 
+                                   angle = 0, 
+                                   hjust = .5, 
+                                   vjust = .5, 
+                                   face = "plain"),
+        axis.text.y = element_text(color = "grey20", 
+                                   size = 15, 
+                                   angle = 0, 
+                                   hjust = .5, 
+                                   vjust = .5, 
+                                   face = "plain"),  
+        axis.title.x = element_text(color = "grey20", 
+                                    size = 30, 
+                                    angle = 0, 
+                                    hjust = .5, 
+                                    vjust = 0, 
+                                    face = "plain"),
+        axis.title.y = element_text(color = "grey20", 
+                                    size = 30, 
+                                    angle = 90, 
+                                    hjust = .5, 
+                                    vjust = 1, 
+                                    face = "plain"),
+        plot.title = element_text(color = "grey20", 
+                                    size = 30, 
+                                    angle = 0, 
+                                    hjust = .5, 
+                                    vjust = .5, 
+                                    face = "plain"),
+        plot.subtitle = element_text(color = "grey20", 
+                                    size = 20, 
+                                    angle = 0, 
+                                    hjust = .5, 
+                                    vjust = .5, 
+                                    face = "plain")) +
+  scale_x_date(date_breaks = "2 month", date_labels =  "%b %Y") +
+  scale_y_continuous(breaks = scales::pretty_breaks(n = 5))
+```
+---
+### Exploring the Relationship Between Vaccinations and Cases/Deaths
+Next, let's take a look at how vaccinations and deaths have evolved over time
+in conjunction with one another:
+
+```{r, echo = FALSE}
+merged_US_data <- inner_join(new_US_vaccinations, new_US_deaths_cases, by = c("Date" = "submission_date")) %>%
+  filter(Series_Complete_Yes > 0)
+```
+
+```{r, echo = FALSE, fig.width = 14, fig.height = 7}
+coeff <- 1
+
+merged_US_data %>%
+  ggplot(aes(x = Date)) +
+  geom_point(aes(y = total_deaths / 10^3), color = "red") + 
+  geom_point(aes(y = Series_Complete_Yes / 10^6), color = "blue") +
+  scale_color_manual(name = "Data", values = c("total_deaths" = "red", "Series_Complete_Yes" = "blue")) +
+  scale_y_continuous(
+    name = "Total # of COVID Deaths (Thousands)",
+    sec.axis = sec_axis(~.*coeff, 
+                        name = "Total # of People Fully Vaccinated (Millions)",
+                        scales::pretty_breaks(n = 10)),
+    breaks = scales::pretty_breaks(n = 10)
+  ) +
+  labs(title = "Total Fully Vaccinated and Total Deaths vs. Time",
+       x = "Date",
+       color = "Color") +
+  theme_bw() +
+  theme(axis.line = element_line(colour = "black"),
+        axis.text.x = element_text(color = "grey20", 
+                                   size = 15, 
+                                   angle = 0, 
+                                   hjust = .5, 
+                                   vjust = .5, 
+                                   face = "plain"),
+        axis.text.y = element_text(color = "grey20", 
+                                   size = 15, 
+                                   angle = 0, 
+                                   hjust = .5, 
+                                   vjust = .5, 
+                                   face = "plain"),
+        axis.title.x = element_text(color = "grey20", 
+                                    size = 30, 
+                                    angle = 0, 
+                                    hjust = .5, 
+                                    vjust = 0, 
+                                    face = "plain"),
+        axis.title.y.left = element_text(color = "red", 
+                                    size = 25, 
+                                    angle = 90, 
+                                    hjust = .5, 
+                                    vjust = 1, 
+                                    face = "plain"),
+        axis.title.y.right = element_text(color = "blue", 
+                                    size = 25, 
+                                    angle = 270, 
+                                    hjust = .5, 
+                                    vjust = 1, 
+                                    face = "plain"),
+        plot.title = element_text(color = "grey20", 
+                                    size = 30, 
+                                    angle = 0, 
+                                    hjust = .5, 
+                                    vjust = .5, 
+                                    face = "plain")) +
+  scale_x_date(date_breaks = "1 month", date_labels =  "%b %Y")
+```
+---
+### Exploring the Relationship Between Vaccinations and Cases/Deaths
+
+---
 
 ## Number of Vaccinated People
 

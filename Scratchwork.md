@@ -269,6 +269,24 @@ new_US_deaths_cases
     ## # … with 613 more rows
 
 ``` r
+new_US_deaths_cases %>%
+  filter(submission_date %in% c(as.Date("2020-01-22"), 
+                                as.Date("2020-03-11"), 
+                                as.Date("2020-03-13"), 
+                                as.Date("2021-01-06"),
+                                as.Date("2021-01-23")))
+```
+
+    ## # A tibble: 5 × 5
+    ##   submission_date total_new_cases total_new_deaths total_cases total_deaths
+    ##   <date>                    <dbl>            <dbl>       <dbl>        <dbl>
+    ## 1 2021-01-23               156851             2899    24710939       422204
+    ## 2 2021-01-06               286542             4040    21284925       363853
+    ## 3 2020-03-13                 1211               10        6750          296
+    ## 4 2020-03-11                  796               14        4464          279
+    ## 5 2020-01-22                    7                0           7            0
+
+``` r
 new_US_deaths_cases %>% 
   slice_max(total_new_cases, n = 5) 
 ```
@@ -343,7 +361,7 @@ ccf_values1 = ccf(new_US_deaths_cases$total_new_cases, new_US_deaths_cases$total
 ![](Scratchwork_files/figure-gfm/unnamed-chunk-6-1.png)<!-- -->
 
 ``` r
-ccf_values1
+ccf_values1 
 ```
 
     ## 
@@ -393,10 +411,43 @@ ccf_values1
 ```
 
 ``` r
-ccf_values2 = ccf(new_US_deaths_cases$total_cases, new_US_deaths_cases$total_deaths, lag.max = 100)
+xcf_plot <- function(df, x, y, title = "Cross Correlation"){
+  df_x <- eval(substitute(x), df)
+  df_y <- eval(substitute(y), df)
+  ccf.object <- ccf(df_x, df_y, plot = FALSE, lag.max = 100)
+  output_table <- cbind(lag = ccf.object$lag, 
+                        x.corr = ccf.object$acf) %>%
+                          as_tibble() %>%
+                          mutate(cat = ifelse(x.corr > 0, "green", "red"))
+  output_table %>%
+    ggplot(aes(x = lag, y = x.corr)) +
+    geom_bar(stat = "identity", aes(fill = cat)) +
+    scale_fill_manual(values = c("#339933", "#cc0000")) +
+    ylab("Cross Correlation") +
+    xlab("Lag (days)") +
+    scale_y_continuous(limits = c(-1, 1)) +
+    theme_bw() + 
+    theme(legend.position = "none", 
+          plot.title = element_text(size = 10)) +
+    ggtitle(title) -> p
+}     
+
+# run the function
+plot1 <- xcf_plot(df = new_US_deaths_cases, 
+         x = new_US_deaths_cases$total_new_cases, 
+         y = new_US_deaths_cases$total_new_deaths, 
+         title = "Cross Correlation : Daily New Cases and Daily New Deaths")
+
+plot1
 ```
 
 ![](Scratchwork_files/figure-gfm/unnamed-chunk-7-1.png)<!-- -->
+
+``` r
+ccf_values2 = ccf(new_US_deaths_cases$total_cases, new_US_deaths_cases$total_deaths, lag.max = 100)
+```
+
+![](Scratchwork_files/figure-gfm/unnamed-chunk-8-1.png)<!-- -->
 
 ``` r
 ccf_values2
@@ -481,7 +532,7 @@ new_US_deaths_cases %>%
   scale_y_continuous(breaks = scales::pretty_breaks(n = 10))
 ```
 
-![](Scratchwork_files/figure-gfm/unnamed-chunk-8-1.png)<!-- -->
+![](Scratchwork_files/figure-gfm/unnamed-chunk-9-1.png)<!-- -->
 
 ``` r
 new_US_deaths_cases %>%
@@ -526,7 +577,7 @@ new_US_deaths_cases %>%
   scale_y_continuous(breaks = scales::pretty_breaks(n = 10))
 ```
 
-![](Scratchwork_files/figure-gfm/unnamed-chunk-9-1.png)<!-- -->
+![](Scratchwork_files/figure-gfm/unnamed-chunk-10-1.png)<!-- -->
 
 ``` r
 new_US_deaths_cases %>%
@@ -571,7 +622,7 @@ new_US_deaths_cases %>%
   scale_y_continuous(breaks = scales::pretty_breaks(n = 10))
 ```
 
-![](Scratchwork_files/figure-gfm/unnamed-chunk-10-1.png)<!-- -->
+![](Scratchwork_files/figure-gfm/unnamed-chunk-11-1.png)<!-- -->
 
 ``` r
 new_US_deaths_cases %>%
@@ -616,7 +667,7 @@ new_US_deaths_cases %>%
   scale_y_continuous(breaks = scales::pretty_breaks(n = 10))
 ```
 
-![](Scratchwork_files/figure-gfm/unnamed-chunk-11-1.png)<!-- -->
+![](Scratchwork_files/figure-gfm/unnamed-chunk-12-1.png)<!-- -->
 
 ``` r
 new_US_vaccinations <- US_vaccinations %>%
@@ -697,7 +748,7 @@ new_US_vaccinations %>%
   scale_y_continuous(breaks = scales::pretty_breaks(n = 10))
 ```
 
-![](Scratchwork_files/figure-gfm/unnamed-chunk-13-1.png)<!-- -->
+![](Scratchwork_files/figure-gfm/unnamed-chunk-14-1.png)<!-- -->
 
 ``` r
 new_US_vaccinations %>%
@@ -743,7 +794,7 @@ new_US_vaccinations %>%
   scale_y_continuous(breaks = scales::pretty_breaks(n = 10))
 ```
 
-![](Scratchwork_files/figure-gfm/unnamed-chunk-14-1.png)<!-- -->
+![](Scratchwork_files/figure-gfm/unnamed-chunk-15-1.png)<!-- -->
 
 ``` r
 Pop_Pct.labs <- c("% Fully Vaccinated 12+", 
@@ -807,7 +858,7 @@ new_US_vaccinations %>%
   scale_y_continuous(breaks = scales::pretty_breaks(n = 10))
 ```
 
-![](Scratchwork_files/figure-gfm/unnamed-chunk-15-1.png)<!-- -->
+![](Scratchwork_files/figure-gfm/unnamed-chunk-16-1.png)<!-- -->
 
 ``` r
 merged_US_data <- inner_join(new_US_vaccinations, new_US_deaths_cases, by = c("Date" = "submission_date")) %>%
@@ -874,13 +925,13 @@ merged_US_data %>%
                                     hjust = .5, 
                                     vjust = 0, 
                                     face = "plain"),
-        axis.title.y.left = element_text(color = "grey20", 
+        axis.title.y.left = element_text(color = "red", 
                                     size = 25, 
                                     angle = 90, 
                                     hjust = .5, 
                                     vjust = 1, 
                                     face = "plain"),
-        axis.title.y.right = element_text(color = "grey20", 
+        axis.title.y.right = element_text(color = "blue", 
                                     size = 25, 
                                     angle = 270, 
                                     hjust = .5, 
@@ -895,13 +946,13 @@ merged_US_data %>%
   scale_x_date(date_breaks = "1 month", date_labels =  "%b %Y")
 ```
 
-![](Scratchwork_files/figure-gfm/unnamed-chunk-17-1.png)<!-- -->
+![](Scratchwork_files/figure-gfm/unnamed-chunk-18-1.png)<!-- -->
 
 ``` r
 ccf_values3 = ccf(merged_US_data$Series_Complete_Yes, merged_US_data$total_cases, lag.max = 150)
 ```
 
-![](Scratchwork_files/figure-gfm/unnamed-chunk-18-1.png)<!-- -->
+![](Scratchwork_files/figure-gfm/unnamed-chunk-19-1.png)<!-- -->
 
 ``` r
 ccf_values3
@@ -971,7 +1022,7 @@ ccf_values3
 ccf_values4 = ccf(merged_US_data$Series_Complete_Yes, merged_US_data$total_deaths, lag.max = 250)
 ```
 
-![](Scratchwork_files/figure-gfm/unnamed-chunk-19-1.png)<!-- -->
+![](Scratchwork_files/figure-gfm/unnamed-chunk-20-1.png)<!-- -->
 
 ``` r
 ccf_values4
@@ -1063,7 +1114,7 @@ ccf_values4
 ccf_values4 = ccf(merged_US_data$Series_Complete_Pop_Pct, merged_US_data$total_new_deaths, lag.max = 150)
 ```
 
-![](Scratchwork_files/figure-gfm/unnamed-chunk-20-1.png)<!-- -->
+![](Scratchwork_files/figure-gfm/unnamed-chunk-21-1.png)<!-- -->
 
 ``` r
 ccf_values4
@@ -1240,7 +1291,7 @@ seasons_deaths_cases %>%
 
     ## Picking joint bandwidth of 16.5
 
-![](Scratchwork_files/figure-gfm/unnamed-chunk-24-1.png)<!-- -->
+![](Scratchwork_files/figure-gfm/unnamed-chunk-25-1.png)<!-- -->
 
 ``` r
 seasons_deaths_cases %>%
@@ -1287,7 +1338,7 @@ seasons_deaths_cases %>%
   scale_x_continuous(breaks = scales::pretty_breaks(n = 5))
 ```
 
-![](Scratchwork_files/figure-gfm/unnamed-chunk-25-1.png)<!-- -->
+![](Scratchwork_files/figure-gfm/unnamed-chunk-26-1.png)<!-- -->
 
 ``` r
 season_lreg <- linear_reg() %>%
@@ -1315,3 +1366,18 @@ glance(season_lreg)$r.squared
 ```
 
     ## [1] 0.2460217
+
+``` r
+seasons_deaths_cases %>%
+  ggplot(aes(x = total_new_cases / 10^5, 
+             fill = season)) +
+  geom_histogram(binwidth = 20000 / 10^5) +
+  facet_wrap(~season) +
+  labs(title = "Histogram of Daily New Cases by Season",
+       x = "Total Daily New Cases (in thousands)",
+       y = "Count",
+       fill = "Season") + 
+  theme_bw()
+```
+
+![](Scratchwork_files/figure-gfm/unnamed-chunk-29-1.png)<!-- -->
