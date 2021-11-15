@@ -31,6 +31,8 @@ library(sjPlot)
 library(sjmisc)
 library(sjlabelled)
 library(reactable)
+library(gghighlight)
+library(interactions)
 ```
 
 ```{r setup, include = FALSE}
@@ -273,12 +275,12 @@ $^*$ https://online.stat.psu.edu/stat510/lesson/8/8.2
 ---
 ### COVID-19 Cases and Deaths - What is the correlation?
 Before we use the R `ccf()` function, let's take a look at the relationship between
-cases and deaths with no lag.
+cases and deaths with no lag:
 
 ```{r, echo = FALSE, fig.width = 14, fig.height = 6}
 new_US_deaths_cases %>%
-  ggplot() +
-  geom_point(aes(x = total_new_cases, y = total_new_deaths)) +
+  ggplot(aes(x = total_new_cases, y = total_new_deaths)) +
+  geom_point() +
   labs(title = "Daily New Deaths vs. Daily New Cases",
        x = "Daily New Cases",
        y = "Daily New Deaths") +
@@ -681,163 +683,380 @@ merged_US_data %>%
 ```
 ---
 ### Exploring the Relationship Between Vaccinations and Cases/Deaths
+```{r, echo = FALSE, fig.width = 16, fig.height = 7.5}
+vax_deaths_ccf_plot <- xcf_plot(df = merged_US_data, 
+         x = merged_US_data$Series_Complete_Pop_Pct, 
+         y = merged_US_data$total_new_deaths, 
+         title = "Cross Correlation : Daily New Deaths and Fully Vaccinated Percent of Population",
+         lag_var = 250)
 
+vax_deaths_ccf_plot
+```
 ---
+### Exploring the Relationship Between Vaccinations and Cases/Deaths
+```{r, echo = FALSE, fig.width = 16, fig.height = 7.5}
+vax_deaths_ccf_plot <- xcf_plot(df = merged_US_data, 
+         x = merged_US_data$Series_Complete_Pop_Pct, 
+         y = merged_US_data$total_new_deaths, 
+         title = "Cross Correlation : Daily New Deaths and Fully Vaccinated Percent of Population",
+         lag_var = 100)
 
-## Number of Vaccinated People
-
---
-
-## Proportion of Vaccinated People
-
---
-
-## Differences across Age Groups
-
+vax_deaths_ccf_plot
+```
 ---
+### Exploring the Relationship Between Vaccinations and Cases/Deaths
+```{r, echo = FALSE, fig.show='hide'}
+ccf_raw_data2 <- ccf(merged_US_data$Series_Complete_Pop_Pct, merged_US_data$total_new_deaths, plot = FALSE, lag.max = 100) 
 
-## COMBINE AND EXPLORE
-
---
-
-# Have vaccines reduced cases and/or deaths and if so, to what extent?
-
+ccf_raw_data2 <- data.frame(lag = ccf_raw_data2$lag, CCF = ccf_raw_data2$acf)
+  
+reactable(ccf_raw_data2)
+  
+#data.frame(lag = correlation$ccf$lag, CCF = correlation$ccf$acf)
+```
 ---
+### Exploring the Seasonality of COVID-19
+Let's explore the relationship between COVID-19 and the four seasons:
+```{r, echo = FALSE}
+seasons_deaths_cases <- new_US_deaths_cases %>%
+  mutate(season = case_when(
+  month(submission_date) %in% c(9, 10, 11) ~ "Fall",
+  month(submission_date) %in% c(12, 1, 2) ~ "Winter",
+  month(submission_date) %in% c(3, 4, 5) ~ "Spring",
+  month(submission_date) %in% c(6, 7, 8) ~ "Summer"
+))
+```
 
-## ADD ANOTHER DIMENSION
-
---
-
-# Which vaccines are more popular in certain states (J&J, Pfizer, Moderna)?
-
----
-
-# xaringan
-
-- The presentation is created using the `xaringan` package
-
----
-
-# Layouts
-
-You can use plain text
-
-- or bullet points
-
-.pull-left[
-or text in two columns $^*$
-]
-.pull-right[
-- like
-- this
-]
-
-.footnote[
-[*] And add footnotes
-]
-
----
-
-# Code
-
-```{r boring-regression}
-# a boring regression
-model <- lm(dist ~ speed, data = cars)
-tidy(model)
-glance(model)
+```{r, echo = FALSE}
+avg_season <- seasons_deaths_cases %>%
+  group_by(season) %>%
+  summarise(median_ncases = median(total_new_cases, na.rm = TRUE),
+            median_ndeaths = median(total_new_deaths, na.rm = TRUE),
+            mean_ncases = mean(total_new_cases, na.rm = TRUE),
+            mean_ndeaths = mean(total_new_deaths, na.rm = TRUE),
+            sd_ncases = sd(total_new_cases, na.rm = TRUE),
+            sd_ndeaths = sd(total_new_deaths, na.rm = TRUE),
+            min_ncases = min(total_new_cases, na.rm = TRUE),
+            max_ncases = max(total_new_cases, na.rm = TRUE),
+            iqr_ncases = IQR(total_new_cases, na.rm = TRUE))
+  
+reactable(avg_season)
 ```
 
 ---
-
-# Plots
-
-```{r recode-species, echo = FALSE}
-# In this chunk I'm doing a bunch of analysis that I don't want to present 
-# in my slides. But I need the resulting data frame for a plot I want to present.
-iris_modified <- iris %>%
-  mutate(Species = fct_other(Species, keep = "setosa"))
+### Exploring the Seasonality of COVID-19
+```{r, echo = FALSE, message = FALSE, fig.width = 16, fig.height = 7.5}
+seasons_deaths_cases %>%
+  ggplot(aes(x = total_new_cases / 10^3, 
+             y = reorder(season, total_new_cases), 
+             fill = season)) +
+  geom_density_ridges(alpha = 0.2) +
+  labs(title = "Ridge Plot of Daily New Cases by Season",
+       x = "Daily New Cases (Thousands)",
+       y = "Season",
+       fill = "Season") +
+  theme_bw() +
+  theme(axis.line = element_line(colour = "black"),
+        axis.text.x = element_text(color = "grey20", 
+                                   size = 15, 
+                                   angle = 0, 
+                                   hjust = .5, 
+                                   vjust = .5, 
+                                   face = "plain"),
+        axis.text.y = element_text(color = "grey20", 
+                                   size = 15, 
+                                   angle = 0, 
+                                   hjust = .5, 
+                                   vjust = .5, 
+                                   face = "plain"),  
+        axis.title.x = element_text(color = "grey20", 
+                                    size = 30, 
+                                    angle = 0, 
+                                    hjust = .5, 
+                                    vjust = 0, 
+                                    face = "plain"),
+        axis.title.y = element_text(color = "grey20", 
+                                    size = 30, 
+                                    angle = 90, 
+                                    hjust = .5, 
+                                    vjust = 1, 
+                                    face = "plain"),
+        plot.title = element_text(color = "grey20", 
+                                    size = 30, 
+                                    angle = 0, 
+                                    hjust = .5, 
+                                    vjust = .5, 
+                                    face = "plain"),
+        legend.text = element_text(color = "grey20", 
+                                    size = 15),
+        legend.title = element_text(color = "grey20", 
+                                    size = 20)) +
+  scale_x_continuous(breaks = scales::pretty_breaks(n = 5))
 ```
-
-```{r plot-iris, echo = FALSE}
-# Code hidden with echo = FALSE
-# Uses modified iris dataset from previous chunk
-# Play around with height and width until you're happy with the look
-ggplot(data = iris_modified, mapping = aes(x = Sepal.Width, y = Sepal.Length, color = Species)) +
-  geom_point() + 
-  theme_minimal() # theme options: https://ggplot2.tidyverse.org/reference/ggtheme.html
-```
-
 ---
-
-## Plot and text
-
-.pull-left[
-- Some text
-- goes here
-]
-.pull-right[
-```{r warning=FALSE, out.width="100%", fig.width=4, echo=FALSE}
-# see how I changed out.width and fig.width from defaults
-# to make the figure bigger
-ggplot(penguins, aes(x = bill_length_mm, y = species, color = species)) +
+### Exploring the Seasonality of COVID-19
+```{r, echo = FALSE, fig.width = 16, fig.height = 7.5}
+seasons_deaths_cases %>%
+  ggplot(aes(x = total_new_cases / 10^3, 
+             y = reorder(season, total_new_cases), 
+             fill = season)) +
   geom_boxplot() +
-  theme_minimal()
+  labs(title = "Ridge Plot Of Total Daily New Cases By Season",
+       x = "Daily New Cases (Thousands)",
+       y = "Season",
+       fill = "Season") +
+  theme_bw() +
+  theme(axis.line = element_line(colour = "black"),
+        axis.text.x = element_text(color = "grey20", 
+                                   size = 15, 
+                                   angle = 0, 
+                                   hjust = .5, 
+                                   vjust = .5, 
+                                   face = "plain"),
+        axis.text.y = element_text(color = "grey20", 
+                                   size = 15, 
+                                   angle = 0, 
+                                   hjust = .5, 
+                                   vjust = .5, 
+                                   face = "plain"),  
+        axis.title.x = element_text(color = "grey20", 
+                                    size = 30, 
+                                    angle = 0, 
+                                    hjust = .5, 
+                                    vjust = 0, 
+                                    face = "plain"),
+        axis.title.y = element_text(color = "grey20", 
+                                    size = 30, 
+                                    angle = 90, 
+                                    hjust = .5, 
+                                    vjust = 1, 
+                                    face = "plain"),
+        plot.title = element_text(color = "grey20", 
+                                    size = 30, 
+                                    angle = 0, 
+                                    hjust = .5, 
+                                    vjust = .5, 
+                                    face = "plain"),
+        legend.text = element_text(color = "grey20", 
+                                    size = 15),
+        legend.title = element_text(color = "grey20", 
+                                    size = 20)) +
+  scale_x_continuous(breaks = scales::pretty_breaks(n = 5))
 ```
+---
+### Exploring the Seasonality of COVID-19
+Towards the end of this semester, we learned how to create models with 
+categorical explanatory variables. Let's run a linear regression by factoring
+the `season` variable:
+```{r, echo = FALSE}
+season_lreg <- linear_reg() %>%
+  set_engine("lm") %>%
+  fit(total_new_cases ~ factor(season), data = seasons_deaths_cases)
+
+season_lreg
+
+glance(season_lreg)
+```
+This tells us that the average number of daily new cases in the Fall is 94,747.
+It is also possible to derive the daily new cases averages for the other seasons 
+from this as well. Additionally, note that $R^2 \approx 0.25$. This tells us that 
+about 25% of the of the variation in the daily new cases 
+is dependent on the season.
+---
+### Tying Seasonality into the Relationship Between Cases and Deaths
+Finally, let's try to see if the relationship between deaths and cases does or
+does not vary by the season. This type of analysis is equivalent to interpreting
+main vs. interaction effects. We will start with the main effects:
+
+```{r, echo = FALSE}
+deaths_cases_main_fit <- linear_reg() %>%
+  set_engine("lm") %>%
+  fit(total_new_deaths ~ total_new_cases + factor(season), data = seasons_deaths_cases) 
+
+deaths_cases_int_fit <- linear_reg() %>%
+  set_engine("lm") %>%
+  fit(total_new_deaths ~ total_new_cases * factor(season), data = seasons_deaths_cases) 
+
+#deaths_cases_main_fit
+#deaths_cases_int_fit
+
+#glance(deaths_cases_main_fit)
+#glance(deaths_cases_int_fit)
+```
+
+```{r, echo = FALSE, message = FALSE, fig.width = 14, fig.height = 6}
+season_f <- filter(augment(deaths_cases_main_fit$fit), augment(deaths_cases_main_fit$fit)$"factor(season)" %in% c("Fall"))
+season_w <- filter(augment(deaths_cases_main_fit$fit), augment(deaths_cases_main_fit$fit)$"factor(season)" %in% c("Winter"))
+season_sp <- filter(augment(deaths_cases_main_fit$fit), augment(deaths_cases_main_fit$fit)$"factor(season)" %in% c("Spring"))
+season_su <- filter(augment(deaths_cases_main_fit$fit), augment(deaths_cases_main_fit$fit)$"factor(season)" %in% c("Summer"))
+
+ggplot(seasons_deaths_cases) +
+  aes(x = total_new_cases, y = total_new_deaths, color = season) +
+  geom_point() +
+  geom_line(data = season_f, aes(x = total_new_cases, 
+                                 y = .fitted), 
+            size = 0.75, 
+            color = "orange") +
+  geom_line(data = season_w, aes(x = total_new_cases, 
+                                 y = .fitted), 
+            size = 0.75, 
+            color = "purple") + 
+  geom_line(data = season_sp, aes(x = total_new_cases, 
+                                 y = .fitted), 
+            size = 0.75, 
+            color = "darkolivegreen3") + 
+  geom_line(data = season_su, aes(x = total_new_cases, 
+                                  y = .fitted), 
+            size = 0.75, 
+            color = "deepskyblue") +
+  labs(title = "Daily New Deaths vs. Daily New Cases",
+       x = "Daily New Cases",
+       y = "Daily New Deaths",
+       color = "Season") +
+  theme_bw() +
+  theme(axis.line = element_line(colour = "black"),
+        axis.text.x = element_text(color = "grey20", 
+                                   size = 15, 
+                                   angle = 0, 
+                                   hjust = .5, 
+                                   vjust = .5, 
+                                   face = "plain"),
+        axis.text.y = element_text(color = "grey20", 
+                                   size = 15, 
+                                   angle = 0, 
+                                   hjust = .5, 
+                                   vjust = .5, 
+                                   face = "plain"),  
+        axis.title.x = element_text(color = "grey20", 
+                                    size = 30, 
+                                    angle = 0, 
+                                    hjust = .5, 
+                                    vjust = 0, 
+                                    face = "plain"),
+        axis.title.y = element_text(color = "grey20", 
+                                    size = 30, 
+                                    angle = 90, 
+                                    hjust = .5, 
+                                    vjust = 1, 
+                                    face = "plain"),
+        plot.title = element_text(color = "grey20", 
+                                    size = 30, 
+                                    angle = 0, 
+                                    hjust = .5, 
+                                    vjust = .5, 
+                                    face = "plain"),
+        legend.text = element_text(color = "grey20", 
+                                    size = 17),
+        legend.title = element_text(color = "grey20", 
+                                    size = 20)) +
+  scale_x_continuous(breaks = scales::pretty_breaks(n = 10)) +
+  scale_y_continuous(breaks = scales::pretty_breaks(n = 10))
+```
+---
+### Tying Seasonality into the Relationship Between Cases and Deaths
+Now we will view the interaction effects:
+
+```{r, echo = FALSE, message = FALSE, fig.width = 14, fig.height = 6}
+season_f <- filter(seasons_deaths_cases, season == "Fall")
+season_w <- filter(seasons_deaths_cases, season == "Winter")
+season_sp <- filter(seasons_deaths_cases, season == "Spring")
+season_su <- filter(seasons_deaths_cases, season == "Summer")
+
+
+ggplot(seasons_deaths_cases) +
+  aes(x = total_new_cases, y = total_new_deaths, color = season) +
+  geom_point() +
+  geom_smooth(method = "lm", data = season_f, se = FALSE) +
+  geom_smooth(method = "lm", data = season_w, se = FALSE) +
+  geom_smooth(method = "lm", data = season_sp, se = FALSE) +
+  geom_smooth(method = "lm", data = season_su, se = FALSE) +
+  labs(title = "Daily New Deaths vs. Daily New Cases",
+       x = "Daily New Cases",
+       y = "Daily New Deaths",
+       color = "Season") +
+  theme_bw() +
+  theme(axis.line = element_line(colour = "black"),
+        axis.text.x = element_text(color = "grey20", 
+                                   size = 15, 
+                                   angle = 0, 
+                                   hjust = .5, 
+                                   vjust = .5, 
+                                   face = "plain"),
+        axis.text.y = element_text(color = "grey20", 
+                                   size = 15, 
+                                   angle = 0, 
+                                   hjust = .5, 
+                                   vjust = .5, 
+                                   face = "plain"),  
+        axis.title.x = element_text(color = "grey20", 
+                                    size = 30, 
+                                    angle = 0, 
+                                    hjust = .5, 
+                                    vjust = 0, 
+                                    face = "plain"),
+        axis.title.y = element_text(color = "grey20", 
+                                    size = 30, 
+                                    angle = 90, 
+                                    hjust = .5, 
+                                    vjust = 1, 
+                                    face = "plain"),
+        plot.title = element_text(color = "grey20", 
+                                    size = 30, 
+                                    angle = 0, 
+                                    hjust = .5, 
+                                    vjust = .5, 
+                                    face = "plain"),
+        legend.text = element_text(color = "grey20", 
+                                    size = 15),
+        legend.title = element_text(color = "grey20", 
+                                    size = 20)) +
+  scale_x_continuous(breaks = scales::pretty_breaks(n = 10)) +
+  scale_y_continuous(breaks = scales::pretty_breaks(n = 10))
+```
+---
+### Tying Seasonality into the Relationship Between Cases and Deaths
+```{r}
+deaths_cases_main_fit
+```
+Therefore:
+$$\hat{deaths} = 63 + 0.011 * cases + 358 * spring + 31 * summer + 548 * winter$$
+---
+### Tying Seasonality into the Relationship Between Cases and Deaths
+```{r}
+deaths_cases_int_fit
+```
+Therefore:
+$$\hat{d} = 302 + 0.0087 * c + 319 * sp  + 87 * su + 2 * w - 0.0037 * sp * c - 0.0027 * su * c + 0.0053 * w * c$$
+---
+### Tying Seasonality into the Relationship Between Cases and Deaths
+Let's compare the adjusted $R^2$ values:
+```{r}
+glance(deaths_cases_main_fit)
+glance(deaths_cases_int_fit)
+```
+It appears that adding the `season` variable increased adjusted $R^2$, so it makes
+sense to include it in our model.
+---
+### Conclusions and Takeaways
+- There is a positive linear relationship between cases and deaths
+- Deaths are most correlated to cases with a 7 day lag
+- Vaccination percentages vary widely by age group
+- There is an approximately 65 day lag until daily new deaths and percent
+of population fully vaccinated becomes negatively correlated. 
+- There is a relationship between the season and COVID-19 cases/deaths numbers
+- Knowing the season improves our ability to model deaths versus cases
+---
+<style>
+.center2 {
+  margin: 0;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  -ms-transform: translate(-50%, -50%);
+  transform: translate(-50%, -50%);
+}
+</style>
+.center2[
+# Questions?
 ]
 
----
-
-# Tables
-
-If you want to generate a table, make sure it is in the HTML format (instead of Markdown or other formats), e.g.,
-
-```{r iris-table, echo = FALSE}
-kable(head(iris), format = "html")
-```
-
----
-
-# Images
-
-```{r castle, echo = FALSE, out.width = "60%", fig.align = "center", fig.cap = "Image credit: Photo by Jörg Angeli on Unsplash."}
-include_graphics("https://images.unsplash.com/photo-1535448033526-c0e85c9e6968?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=1650&q=80")
-```
-
-Or you can also include a full page image. See next slide.
-
----
-
-background-image: url(https://images.unsplash.com/photo-1535448033526-c0e85c9e6968?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=1650&q=80)
-
----
-
-# Math Expressions
-
-You can write LaTeX math expressions inside a pair of dollar signs, e.g. &#36;\alpha+\beta$ renders $\alpha+\beta$. You can use the display style with double dollar signs:
-
-```
-$$\bar{X}=\frac{1}{n}\sum_{i=1}^nX_i$$
-```
-
-$$\bar{X}=\frac{1}{n}\sum_{i=1}^nX_i$$
-
-Limitations:
-
-1. The source code of a LaTeX math expression must be in one line, unless it is inside a pair of double dollar signs, in which case the starting `$$` must appear in the very beginning of a line, followed immediately by a non-space character, and the ending `$$` must be at the end of a line, led by a non-space character;
-
-1. There should not be spaces after the opening `$` or before the closing `$`.
-
-1. Math does not work on the title slide (see [#61](https://github.com/yihui/xaringan/issues/61) for a workaround).
-
----
-
-# Feeling adventurous?
-
-- Want to find out more about `xaringan`? See https://slides.yihui.name/xaringan/#1.
-
-- You are welcomed to use the default styling of the slides. In fact, that's what I expect majority of you will do. You will differentiate yourself with the content of your presentation.
-
-- But some of you might want to play around with slide styling. The 
-`xaringanthemer` provides some solutions for this that: https://pkg.garrickadenbuie.com/xaringanthemer.
-
-- And if you want more bells and whistles, there is also `xaringanExtra`: https://pkg.garrickadenbuie.com/xaringanExtra.

@@ -621,7 +621,7 @@ ccf_values4
 ```
 
 ```{r}
-ccf_values4 = ccf(merged_US_data$Series_Complete_Pop_Pct, merged_US_data$total_new_deaths, lag.max = 150)
+ccf_values4 = ccf(merged_US_data$Series_Complete_Pop_Pct, merged_US_data$total_new_deaths, lag.max = 250)
 ccf_values4
 ```
 
@@ -637,6 +637,8 @@ seasons_deaths_cases <- new_US_deaths_cases %>%
   month(submission_date) %in% c(3, 4, 5) ~ "Spring",
   month(submission_date) %in% c(6, 7, 8) ~ "Summer"
 ))
+
+seasons_deaths_cases
 ```
 
 ```{r}
