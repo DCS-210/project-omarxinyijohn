@@ -1,6 +1,6 @@
 ---
-title: Project title
-author: by Team name
+title: Exploring COVID-19 Data
+author: by omarxinyijohn
 output: github_document
 ---
 

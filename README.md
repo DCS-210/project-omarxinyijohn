@@ -1,6 +1,6 @@
-Project title
+Exploring COVID-19 Data
 ================
-by Team name
+by omarxinyijohn
 
 ## Summary
 
