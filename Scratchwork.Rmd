@@ -1,0 +1,770 @@
+---
+title: "Scratchwork"
+output: github_document
+---
+
+```{r load-packages, message = FALSE}
+library(tidyverse)
+library(broom)
+library(lubridate)
+library(devtools)
+library(dsbox)
+library(ggridges)
+library(tidymodels)
+library(openintro)
+```
+
+```{r view-deaths-cases}
+US_deaths_cases <- 
+  read_csv("/cloud/project/data/United_States_COVID-19_Cases_and_Deaths_by_State_over_Time.csv")
+glimpse(US_deaths_cases)
+```
+
+```{r view-vaccinations}
+US_vaccinations <- 
+  read_csv("/cloud/project/data/COVID-19_Vaccinations_in_the_United_States_Jurisdiction.csv")
+glimpse(US_vaccinations)
+```
+
+First we filter the data so it only includes the most up-to-date vaccination numbers as of 10/05/2021:
+
+```{r october-vaccinations}
+October_vaccinations <- filter(US_vaccinations, Date == "10/05/2021")
+```
+
+Next, we take the top 20 locations and create a bar plot to see which vaccines are in each respective location:
+
+```{r vaccine-bar-chart, fig.width=10, fig.height=6}
+October_vaccinations %>% 
+  select(Location, Series_Complete_Yes, Series_Complete_Janssen,
+         Series_Complete_Moderna, Series_Complete_Pfizer, 
+         Series_Complete_Unk_Manuf) %>%
+  filter(Location != "US") %>%
+  group_by(Location) %>%
+  arrange(desc(Series_Complete_Yes)) %>%
+  head(20) %>%
+  pivot_longer(cols = -Location, names_to = "Series_Type") %>%
+  filter(Series_Type == "Series_Complete_Janssen" | 
+           Series_Type == "Series_Complete_Moderna" |
+           Series_Type == "Series_Complete_Pfizer" | 
+           Series_Type == "Series_Complete_Unk_Manuf") %>%
+  ggplot(aes(x = reorder(Location, value), 
+             y = value/ 10^6, 
+             fill = Series_Type)) +
+  geom_bar(stat = "identity") + 
+  labs(title = "US Vaccinations Breakdown",
+       x = "Location",
+       y = "People (in millions)",
+       fill = "Type of Vaccine") +
+  coord_flip() + 
+  theme_bw() +
+  scale_color_viridis_d() +
+  scale_y_continuous(breaks = scales::pretty_breaks(n = 20))
+```
+ 
+It looks like the Pfizer vaccine is the most popular across the board. If we want a better visualization to compare states, we could filter out the `US` location from this chart.
+
+```{r vaccine-bar-chart2, fig.width=12, fig.height=10}
+October_vaccinations %>% 
+  select(Location, Series_Complete_Yes, Series_Complete_Janssen,
+         Series_Complete_Moderna, Series_Complete_Pfizer, 
+         Series_Complete_Unk_Manuf) %>%
+  filter(!(Location %in% c("VI", "VA2", "DD2", 
+                       "PR", "IH2", "BP2", 
+                       "GU", "FM", "MP", 
+                       "AS", "MH", "RP", 
+                       "LTC"))) %>%
+  group_by(Location) %>%
+  arrange(desc(Series_Complete_Yes)) %>%
+  pivot_longer(cols = -Location, names_to = "Series_Type") %>%
+  filter(Series_Type == "Series_Complete_Janssen" | 
+           Series_Type == "Series_Complete_Moderna" |
+           Series_Type == "Series_Complete_Pfizer" | 
+           Series_Type == "Series_Complete_Unk_Manuf") %>%
+  ggplot(aes(x = reorder(Location, value), 
+             y = value/ 10^6, 
+             fill = Series_Type)) +
+  geom_bar(stat = "identity", position = "fill") + 
+  labs(title = "US Vaccinations Breakdown",
+       x = "Location",
+       y = "Fraction of Population",
+       fill = "Type of Vaccine") +
+  coord_flip() + 
+  theme_bw() +
+  scale_color_viridis_d() +
+  scale_y_continuous(breaks = scales::pretty_breaks(n = 10)) 
+```
+
+Vaccination breakdown for all 50 states and DC.
+
+```{r}
+new_US_deaths_cases <- US_deaths_cases %>%
+  filter(!(state %in% c("NYC", "PR", "GU",
+                           "VI", "MP", "RMI",
+                           "AS", "PW", "FSM"))) %>%
+  group_by(submission_date) %>%
+  summarise(total_new_cases = sum(new_case),
+            total_new_deaths = sum(new_death),
+            total_cases = sum(tot_cases),
+            total_deaths = sum(tot_death)) 
+
+new_US_deaths_cases$submission_date = as.Date(new_US_deaths_cases$submission_date,
+                                              format="%m/%d/%Y")
+
+new_US_deaths_cases <- new_US_deaths_cases %>%
+  arrange(desc(submission_date))
+
+new_US_deaths_cases
+
+new_US_deaths_cases %>%
+  filter(submission_date %in% c(as.Date("2020-01-22"), 
+                                as.Date("2020-03-11"), 
+                                as.Date("2020-03-13"), 
+                                as.Date("2021-01-06"),
+                                as.Date("2021-01-23")))
+```
+
+```{r}
+new_US_deaths_cases %>% 
+  slice_max(total_new_cases, n = 5) 
+
+max_cases_row <- new_US_deaths_cases %>% 
+  slice_max(total_new_cases, n = 1) 
+
+max_cases_date <- max_cases_row$submission_date
+
+max_cases_date
+```
+
+```{r}
+new_US_deaths_cases %>%
+  slice_max(total_new_deaths, n = 5)
+
+max_deaths_row <- new_US_deaths_cases %>% 
+  slice_max(total_new_deaths, n = 1) 
+
+max_deaths_date <- max_deaths_row$submission_date
+
+max_deaths_date
+```
+
+```{r}
+as.integer(max_deaths_date) - as.integer(max_cases_date)
+```
+
+```{r}
+x <- as.ts(c(11,7,8,12,14))
+y <- as.ts(c(7,10,6,7,10))
+x
+```
+
+```{r}
+ccf_values1 = ccf(new_US_deaths_cases$total_new_cases, new_US_deaths_cases$total_new_deaths, lag.max = 100)
+ccf_values1 
+
+
+# https://online.stat.psu.edu/stat510/lesson/8/8.2
+```
+
+```{r}
+xcf_plot <- function(df, x, y, title = "Cross Correlation"){
+  df_x <- eval(substitute(x), df)
+  df_y <- eval(substitute(y), df)
+  ccf.object <- ccf(df_x, df_y, plot = FALSE, lag.max = 100)
+  output_table <- cbind(lag = ccf.object$lag, 
+                        x.corr = ccf.object$acf) %>%
+                          as_tibble() %>%
+                          mutate(cat = ifelse(x.corr > 0, "green", "red"))
+  output_table %>%
+    ggplot(aes(x = lag, y = x.corr)) +
+    geom_bar(stat = "identity", aes(fill = cat)) +
+    scale_fill_manual(values = c("#339933", "#cc0000")) +
+    ylab("Cross Correlation") +
+    xlab("Lag (days)") +
+    scale_y_continuous(limits = c(-1, 1)) +
+    theme_bw() + 
+    theme(legend.position = "none", 
+          plot.title = element_text(size = 10)) +
+    ggtitle(title) -> p
+}     
+
+# run the function
+plot1 <- xcf_plot(df = new_US_deaths_cases, 
+         x = new_US_deaths_cases$total_new_cases, 
+         y = new_US_deaths_cases$total_new_deaths, 
+         title = "Cross Correlation : Daily New Cases and Daily New Deaths")
+
+plot1
+```
+
+```{r}
+ccf_values2 = ccf(new_US_deaths_cases$total_cases, new_US_deaths_cases$total_deaths, lag.max = 100)
+ccf_values2
+```
+
+
+```{r, fig.width=20, fig.height=12}
+new_US_deaths_cases %>%
+  ggplot() +
+  geom_point(aes(x = submission_date, y = total_new_cases)) +
+  labs(title = "New Cases vs. Time",
+       x = "Date",
+       y = "Number of People") +
+  theme_bw() +
+  theme(axis.line = element_line(colour = "black"),
+        axis.text.x = element_text(color = "grey20", 
+                                   size = 15, 
+                                   angle = 0, 
+                                   hjust = .5, 
+                                   vjust = .5, 
+                                   face = "plain"),
+        axis.text.y = element_text(color = "grey20", 
+                                   size = 15, 
+                                   angle = 0, 
+                                   hjust = .5, 
+                                   vjust = .5, 
+                                   face = "plain"),  
+        axis.title.x = element_text(color = "grey20", 
+                                    size = 30, 
+                                    angle = 0, 
+                                    hjust = .5, 
+                                    vjust = 0, 
+                                    face = "plain"),
+        axis.title.y = element_text(color = "grey20", 
+                                    size = 30, 
+                                    angle = 90, 
+                                    hjust = .5, 
+                                    vjust = 1, 
+                                    face = "plain"),
+        plot.title = element_text(color = "grey20", 
+                                    size = 30, 
+                                    angle = 0, 
+                                    hjust = .5, 
+                                    vjust = .5, 
+                                    face = "plain")) +
+  scale_x_date(date_breaks = "2 month", date_labels =  "%b %Y") +
+  scale_y_continuous(breaks = scales::pretty_breaks(n = 10))
+```
+
+```{r, fig.width=20, fig.height=12}
+new_US_deaths_cases %>%
+  ggplot() +
+  geom_point(aes(x = submission_date, y = total_new_deaths)) +
+  labs(title = "New Deaths vs. Time",
+       x = "Date",
+       y = "Number of People") +
+  theme_bw() +
+  theme(axis.line = element_line(colour = "black"),
+        axis.text.x = element_text(color = "grey20", 
+                                   size = 15, 
+                                   angle = 0, 
+                                   hjust = .5, 
+                                   vjust = .5, 
+                                   face = "plain"),
+        axis.text.y = element_text(color = "grey20", 
+                                   size = 15, 
+                                   angle = 0, 
+                                   hjust = .5, 
+                                   vjust = .5, 
+                                   face = "plain"),  
+        axis.title.x = element_text(color = "grey20", 
+                                    size = 30, 
+                                    angle = 0, 
+                                    hjust = .5, 
+                                    vjust = 0, 
+                                    face = "plain"),
+        axis.title.y = element_text(color = "grey20", 
+                                    size = 30, 
+                                    angle = 90, 
+                                    hjust = .5, 
+                                    vjust = 1, 
+                                    face = "plain"),
+        plot.title = element_text(color = "grey20", 
+                                    size = 30, 
+                                    angle = 0, 
+                                    hjust = .5, 
+                                    vjust = .5, 
+                                    face = "plain")) +
+  scale_x_date(date_breaks = "2 month", date_labels =  "%b %Y") +
+  scale_y_continuous(breaks = scales::pretty_breaks(n = 10))
+```
+
+```{r, fig.width=20, fig.height=12}
+new_US_deaths_cases %>%
+  ggplot() +
+  geom_point(aes(x = submission_date, y = total_cases / 10^6)) +
+  labs(title = "Total Cases vs. Time",
+       x = "Date",
+       y = "Number of People (millions)") +
+  theme_bw() +
+  theme(axis.line = element_line(colour = "black"),
+        axis.text.x = element_text(color = "grey20", 
+                                   size = 15, 
+                                   angle = 0, 
+                                   hjust = .5, 
+                                   vjust = .5, 
+                                   face = "plain"),
+        axis.text.y = element_text(color = "grey20", 
+                                   size = 15, 
+                                   angle = 0, 
+                                   hjust = .5, 
+                                   vjust = .5, 
+                                   face = "plain"),  
+        axis.title.x = element_text(color = "grey20", 
+                                    size = 30, 
+                                    angle = 0, 
+                                    hjust = .5, 
+                                    vjust = 0, 
+                                    face = "plain"),
+        axis.title.y = element_text(color = "grey20", 
+                                    size = 30, 
+                                    angle = 90, 
+                                    hjust = .5, 
+                                    vjust = 1, 
+                                    face = "plain"),
+        plot.title = element_text(color = "grey20", 
+                                    size = 30, 
+                                    angle = 0, 
+                                    hjust = .5, 
+                                    vjust = .5, 
+                                    face = "plain")) +
+  scale_x_date(date_breaks = "2 month", date_labels =  "%b %Y") +
+  scale_y_continuous(breaks = scales::pretty_breaks(n = 10))
+```
+
+```{r, fig.width=20, fig.height=12}
+new_US_deaths_cases %>%
+  ggplot() +
+  geom_point(aes(x = submission_date, y = total_deaths / 10^3)) +
+  labs(title = "Total Deaths vs. Time",
+       x = "Date",
+       y = "Number of People (thousands)") +
+  theme_bw() +
+  theme(axis.line = element_line(colour = "black"),
+        axis.text.x = element_text(color = "grey20", 
+                                   size = 15, 
+                                   angle = 0, 
+                                   hjust = .5, 
+                                   vjust = .5, 
+                                   face = "plain"),
+        axis.text.y = element_text(color = "grey20", 
+                                   size = 15, 
+                                   angle = 0, 
+                                   hjust = .5, 
+                                   vjust = .5, 
+                                   face = "plain"),  
+        axis.title.x = element_text(color = "grey20", 
+                                    size = 30, 
+                                    angle = 0, 
+                                    hjust = .5, 
+                                    vjust = 0, 
+                                    face = "plain"),
+        axis.title.y = element_text(color = "grey20", 
+                                    size = 30, 
+                                    angle = 90, 
+                                    hjust = .5, 
+                                    vjust = 1, 
+                                    face = "plain"),
+        plot.title = element_text(color = "grey20", 
+                                    size = 30, 
+                                    angle = 0, 
+                                    hjust = .5, 
+                                    vjust = .5, 
+                                    face = "plain")) +
+  scale_x_date(date_breaks = "2 month", date_labels =  "%b %Y") +
+  scale_y_continuous(breaks = scales::pretty_breaks(n = 10))
+```
+
+```{r}
+new_US_vaccinations <- US_vaccinations %>%
+  select(Date, Location, Series_Complete_Yes, 
+         Series_Complete_Pop_Pct,
+         Series_Complete_12PlusPop_Pct,
+         Series_Complete_18PlusPop_Pct,
+         Series_Complete_65PlusPop_Pct,
+         Series_Complete_Janssen, Series_Complete_Moderna, 
+         Series_Complete_Pfizer, Series_Complete_Unk_Manuf) %>%
+  filter(Location %in% c("US"))
+
+new_US_vaccinations$Date = as.Date(new_US_vaccinations$Date,
+                                              format="%m/%d/%Y")
+
+new_US_vaccinations
+```
+
+```{r, fig.width=20, fig.height=12}
+new_US_vaccinations %>%
+  filter(Series_Complete_Pop_Pct > 0) %>%
+  ggplot() +
+  geom_point(aes(x = Date, y = Series_Complete_Pop_Pct)) +
+  labs(title = "Series Complete Vaccinations Pop. Pct vs. Time",
+       x = "Date",
+       y = "Percent of US Population") +
+  theme_bw() +
+  theme(axis.line = element_line(colour = "black"),
+        axis.text.x = element_text(color = "grey20", 
+                                   size = 15, 
+                                   angle = 0, 
+                                   hjust = .5, 
+                                   vjust = .5, 
+                                   face = "plain"),
+        axis.text.y = element_text(color = "grey20", 
+                                   size = 15, 
+                                   angle = 0, 
+                                   hjust = .5, 
+                                   vjust = .5, 
+                                   face = "plain"),  
+        axis.title.x = element_text(color = "grey20", 
+                                    size = 30, 
+                                    angle = 0, 
+                                    hjust = .5, 
+                                    vjust = 0, 
+                                    face = "plain"),
+        axis.title.y = element_text(color = "grey20", 
+                                    size = 30, 
+                                    angle = 90, 
+                                    hjust = .5, 
+                                    vjust = 1, 
+                                    face = "plain"),
+        plot.title = element_text(color = "grey20", 
+                                    size = 30, 
+                                    angle = 0, 
+                                    hjust = .5, 
+                                    vjust = .5, 
+                                    face = "plain")) +
+  scale_x_date(date_breaks = "1 month", date_labels =  "%b %Y") +
+  scale_y_continuous(breaks = scales::pretty_breaks(n = 10))
+```
+
+```{r, fig.width=20, fig.height=12}
+new_US_vaccinations %>%
+  filter(Series_Complete_Yes > 0) %>%
+  ggplot() +
+  geom_point(aes(x = Date, y = Series_Complete_Yes / 10^6)) +
+  labs(title = "Series Complete Vaccinations Total Pop. vs. Time",
+       x = "Date",
+       y = "Number of people (in millions)") +
+  theme_bw() +
+  theme(axis.line = element_line(colour = "black"),
+        axis.text.x = element_text(color = "grey20", 
+                                   size = 15, 
+                                   angle = 0, 
+                                   hjust = .5, 
+                                   vjust = .5, 
+                                   face = "plain"),
+        axis.text.y = element_text(color = "grey20", 
+                                   size = 15, 
+                                   angle = 0, 
+                                   hjust = .5, 
+                                   vjust = .5, 
+                                   face = "plain"),  
+        axis.title.x = element_text(color = "grey20", 
+                                    size = 30, 
+                                    angle = 0, 
+                                    hjust = .5, 
+                                    vjust = 0, 
+                                    face = "plain"),
+        axis.title.y = element_text(color = "grey20", 
+                                    size = 30, 
+                                    angle = 90, 
+                                    hjust = .5, 
+                                    vjust = 1, 
+                                    face = "plain"),
+        plot.title = element_text(color = "grey20", 
+                                    size = 30, 
+                                    angle = 0, 
+                                    hjust = .5, 
+                                    vjust = .5, 
+                                    face = "plain")) +
+  scale_x_date(date_breaks = "1 month", date_labels =  "%b %Y") +
+  scale_y_continuous(breaks = scales::pretty_breaks(n = 10))
+```
+
+
+
+```{r, fig.width=20, fig.height=18}
+Pop_Pct.labs <- c("% Fully Vaccinated 12+", 
+                  "% Fully Vaccinated (Total Pop)",
+                  "% Fully Vaccinated 18+", 
+                  "% Fully Vaccinated 65+")
+names(Pop_Pct.labs) <- c("Series_Complete_12PlusPop_Pct", 
+                         "Series_Complete_Pop_Pct",
+                         "Series_Complete_18PlusPop_Pct",
+                         "Series_Complete_65PlusPop_Pct")
+
+new_US_vaccinations %>%
+  filter(Series_Complete_Yes > 0) %>%
+  pivot_longer(cols = c(Series_Complete_Pop_Pct,
+                        Series_Complete_12PlusPop_Pct,
+                        Series_Complete_18PlusPop_Pct,
+                        Series_Complete_65PlusPop_Pct),
+               names_to = "Pop_Pct_Type",
+               values_to = "Pop_Pct") %>%
+  ggplot() +
+  geom_point(aes(x = Date, y = Pop_Pct)) +
+  facet_wrap(~Pop_Pct_Type,
+             labeller = labeller(Pop_Pct_Type = Pop_Pct.labs)) + 
+  labs(title = "Fully Vaccinated Pop. Pct vs. Time",
+       x = "Date",
+       y = "Percent of US Population") +
+  theme_bw() +
+  theme(strip.text = element_text(size = 20),
+        axis.line = element_line(colour = "black"),
+        axis.text.x = element_text(color = "grey20", 
+                                   size = 15, 
+                                   angle = 0, 
+                                   hjust = .5, 
+                                   vjust = .5, 
+                                   face = "plain"),
+        axis.text.y = element_text(color = "grey20", 
+                                   size = 15, 
+                                   angle = 0, 
+                                   hjust = .5, 
+                                   vjust = .5, 
+                                   face = "plain"),  
+        axis.title.x = element_text(color = "grey20", 
+                                    size = 30, 
+                                    angle = 0, 
+                                    hjust = .5, 
+                                    vjust = 0, 
+                                    face = "plain"),
+        axis.title.y = element_text(color = "grey20", 
+                                    size = 30, 
+                                    angle = 90, 
+                                    hjust = .5, 
+                                    vjust = 1, 
+                                    face = "plain"),
+        plot.title = element_text(color = "grey20", 
+                                    size = 30, 
+                                    angle = 0, 
+                                    hjust = .5, 
+                                    vjust = .5, 
+                                    face = "plain")) +
+  scale_x_date(date_breaks = "2 month", date_labels =  "%b %Y") +
+  scale_y_continuous(breaks = scales::pretty_breaks(n = 10))
+```
+
+```{r}
+merged_US_data <- inner_join(new_US_vaccinations, new_US_deaths_cases, by = c("Date" = "submission_date")) %>%
+  filter(Series_Complete_Yes > 0)
+
+merged_US_data
+```
+
+```{r, fig.width=20, fig.height=12}
+coeff <- 1
+
+merged_US_data %>%
+  ggplot(aes(x = Date)) +
+  geom_point(aes(y = total_deaths / 10^3), color = "red") + 
+  geom_point(aes(y = Series_Complete_Yes / 10^6), color = "blue") +
+  scale_color_manual(name = "Data", values = c("total_deaths" = "red", "Series_Complete_Yes" = "blue")) +
+  scale_y_continuous(
+    name = "Total # of COVID Deaths (Thousands)",
+    sec.axis = sec_axis(~.*coeff, 
+                        name = "Total # of People Fully Vaccinated (Millions)",
+                        scales::pretty_breaks(n = 10)),
+    breaks = scales::pretty_breaks(n = 10)
+  ) +
+  labs(title = "Total Fully Vaccinated and Total Deaths vs. Time",
+       x = "Date",
+       color = "Color") +
+  theme_bw() +
+  theme(axis.line = element_line(colour = "black"),
+        axis.text.x = element_text(color = "grey20", 
+                                   size = 15, 
+                                   angle = 0, 
+                                   hjust = .5, 
+                                   vjust = .5, 
+                                   face = "plain"),
+        axis.text.y = element_text(color = "grey20", 
+                                   size = 15, 
+                                   angle = 0, 
+                                   hjust = .5, 
+                                   vjust = .5, 
+                                   face = "plain"),
+        axis.title.x = element_text(color = "grey20", 
+                                    size = 30, 
+                                    angle = 0, 
+                                    hjust = .5, 
+                                    vjust = 0, 
+                                    face = "plain"),
+        axis.title.y.left = element_text(color = "red", 
+                                    size = 25, 
+                                    angle = 90, 
+                                    hjust = .5, 
+                                    vjust = 1, 
+                                    face = "plain"),
+        axis.title.y.right = element_text(color = "blue", 
+                                    size = 25, 
+                                    angle = 270, 
+                                    hjust = .5, 
+                                    vjust = 1, 
+                                    face = "plain"),
+        plot.title = element_text(color = "grey20", 
+                                    size = 30, 
+                                    angle = 0, 
+                                    hjust = .5, 
+                                    vjust = .5, 
+                                    face = "plain")) +
+  scale_x_date(date_breaks = "1 month", date_labels =  "%b %Y")
+```
+
+```{r}
+ccf_values3 = ccf(merged_US_data$Series_Complete_Yes, merged_US_data$total_cases, lag.max = 150)
+ccf_values3
+```
+
+```{r}
+ccf_values4 = ccf(merged_US_data$Series_Complete_Yes, merged_US_data$total_deaths, lag.max = 250)
+ccf_values4
+```
+
+```{r}
+ccf_values4 = ccf(merged_US_data$Series_Complete_Pop_Pct, merged_US_data$total_new_deaths, lag.max = 150)
+ccf_values4
+```
+
+```{r}
+month(new_US_deaths_cases$submission_date)
+```
+
+```{r}
+seasons_deaths_cases <- new_US_deaths_cases %>%
+  mutate(season = case_when(
+  month(submission_date) %in% c(9, 10, 11) ~ "Fall",
+  month(submission_date) %in% c(12, 1, 2) ~ "Winter",
+  month(submission_date) %in% c(3, 4, 5) ~ "Spring",
+  month(submission_date) %in% c(6, 7, 8) ~ "Summer"
+))
+```
+
+```{r}
+seasons_deaths_cases %>%
+  group_by(season) %>%
+  summarise(median_ncases = median(total_new_cases, na.rm = TRUE),
+            median_ndeaths = median(total_new_deaths, na.rm = TRUE),
+            mean_ncases = mean(total_new_cases, na.rm = TRUE),
+            mean_ndeaths = mean(total_new_deaths, na.rm = TRUE),
+            sd_ncases = sd(total_new_cases, na.rm = TRUE),
+            sd_ndeaths = sd(total_new_deaths, na.rm = TRUE),
+            min_ncases = min(total_new_cases, na.rm = TRUE),
+            max_ncases = max(total_new_cases, na.rm = TRUE),
+            iqr_ncases = IQR(total_new_cases, na.rm = TRUE))
+```
+
+```{r, fig.width=14, fig.height=10}
+seasons_deaths_cases %>%
+  ggplot(aes(x = total_new_cases / 10^3, 
+             y = reorder(season, total_new_cases), 
+             fill = season)) +
+  geom_density_ridges(alpha = 0.2) +
+  labs(title = "Ridge plot of total new cases by season",
+       x = "New Cases (Thousands)",
+       y = "Season",
+       fill = "Season") +
+  theme_bw() +
+  theme(axis.line = element_line(colour = "black"),
+        axis.text.x = element_text(color = "grey20", 
+                                   size = 15, 
+                                   angle = 0, 
+                                   hjust = .5, 
+                                   vjust = .5, 
+                                   face = "plain"),
+        axis.text.y = element_text(color = "grey20", 
+                                   size = 15, 
+                                   angle = 0, 
+                                   hjust = .5, 
+                                   vjust = .5, 
+                                   face = "plain"),  
+        axis.title.x = element_text(color = "grey20", 
+                                    size = 30, 
+                                    angle = 0, 
+                                    hjust = .5, 
+                                    vjust = 0, 
+                                    face = "plain"),
+        axis.title.y = element_text(color = "grey20", 
+                                    size = 30, 
+                                    angle = 90, 
+                                    hjust = .5, 
+                                    vjust = 1, 
+                                    face = "plain"),
+        plot.title = element_text(color = "grey20", 
+                                    size = 30, 
+                                    angle = 0, 
+                                    hjust = .5, 
+                                    vjust = .5, 
+                                    face = "plain")) +
+  scale_x_continuous(breaks = scales::pretty_breaks(n = 5))
+```
+
+
+```{r, fig.width=14, fig.height=10}
+seasons_deaths_cases %>%
+  ggplot(aes(x = total_new_cases / 10^3, 
+             y = reorder(season, total_new_cases), 
+             fill = season)) +
+  geom_boxplot() +
+  labs(title = "Ridge Plot Of Total Daily New Cases By Season",
+       x = "Daily New Cases (Thousands)",
+       y = "Season",
+       fill = "Season") +
+  theme_bw() +
+  theme(axis.line = element_line(colour = "black"),
+        axis.text.x = element_text(color = "grey20", 
+                                   size = 15, 
+                                   angle = 0, 
+                                   hjust = .5, 
+                                   vjust = .5, 
+                                   face = "plain"),
+        axis.text.y = element_text(color = "grey20", 
+                                   size = 15, 
+                                   angle = 0, 
+                                   hjust = .5, 
+                                   vjust = .5, 
+                                   face = "plain"),  
+        axis.title.x = element_text(color = "grey20", 
+                                    size = 30, 
+                                    angle = 0, 
+                                    hjust = .5, 
+                                    vjust = 0, 
+                                    face = "plain"),
+        axis.title.y = element_text(color = "grey20", 
+                                    size = 30, 
+                                    angle = 90, 
+                                    hjust = .5, 
+                                    vjust = 1, 
+                                    face = "plain"),
+        plot.title = element_text(color = "grey20", 
+                                    size = 30, 
+                                    angle = 0, 
+                                    hjust = .5, 
+                                    vjust = .5, 
+                                    face = "plain")) +
+  scale_x_continuous(breaks = scales::pretty_breaks(n = 5))
+```
+
+```{r}
+season_lreg <- linear_reg() %>%
+  set_engine("lm") %>%
+  fit(total_new_cases ~ factor(season), data = seasons_deaths_cases)
+
+season_lreg
+```
+
+```{r}
+glance(season_lreg)$r.squared
+```
+
+```{r}
+seasons_deaths_cases %>%
+  ggplot(aes(x = total_new_cases / 10^5, 
+             fill = season)) +
+  geom_histogram(binwidth = 20000 / 10^5) +
+  facet_wrap(~season) +
+  labs(title = "Histogram of Daily New Cases by Season",
+       x = "Total Daily New Cases (in thousands)",
+       y = "Count",
+       fill = "Season") + 
+  theme_bw()
+```

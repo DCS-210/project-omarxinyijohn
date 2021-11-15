@@ -1,8 +1,8 @@
 ---
-title: "Presentation title"
-subtitle: "Presentation subtitle (if any)"
-author: "Team name <br> Names of team members"
-institute: "University of Edinburgh"
+title: "DCS210 Final Project"
+subtitle: "Exploring COVID-19 Data"
+author: "omarxinyijohn <br> John Mieszczanski & Omar Sarr & Xinyi Zhang"
+institute: "Bates College"
 date: "`r Sys.Date()`"
 output:
   xaringan::moon_reader:
@@ -13,68 +13,708 @@ output:
       highlightStyle: github
       highlightLines: true
       countIncrementalSlides: false
+      color: #000000
 ---
-
 ```{r load-packages, include = FALSE}
-# Add any additional packages you need to this chunk
 library(tidyverse)
 library(tidymodels)
 library(palmerpenguins)
 library(knitr)
 library(xaringanthemer)
+library(broom)
+library(lubridate)
+library(devtools)
+library(dsbox)
+library(ggridges)
+library(openintro)
+library(sjPlot)
+library(sjmisc)
+library(sjlabelled)
+library(reactable)
 ```
 
-```{r setup, include=FALSE}
+```{r setup, include = FALSE}
 # For better figure resolution
-knitr::opts_chunk$set(fig.retina = 3, dpi = 300, fig.width = 6, fig.asp = 0.618, out.width = "80%")
+#knitr::opts_chunk$set(fig.retina = 3, dpi = 300, fig.width = 6, fig.asp = 0.618, out.width = "80%")
 ```
 
-```{r load-data, include=FALSE}
-# Load your data here
+```{r load-data, include = FALSE}
+US_deaths_cases <- 
+  read_csv("/cloud/project/data/United_States_COVID-19_Cases_and_Deaths_by_State_over_Time.csv")
+
+US_vaccinations <- 
+  read_csv("/cloud/project/data/COVID-19_Vaccinations_in_the_United_States_Jurisdiction.csv")
 ```
 
-```{r}
+```{r, echo = FALSE}
 style_xaringan(
-  title_slide_background_image = "img/confetti.jpg"
+  title_slide_background_color = "#000000",
+  title_slide_text_color = "#FFFFFF"
 )
 ```
 
+### Introduction
 
-class: center, middle
+Reported first in December, 2019, the COVID-19 pandemic constitutes the largest global public health crisis in a century, with daunting health and socioeconomic challenges. In the United States alone, more than 700,000 people have lost their lives due to the public health crisis. The progress in vaccination rates, as well as the spread of Delta variant, added more nuances to the overall situation.
 
-## A statement of the overall goal / research question
+### Overall Goal
+
+In this project, we focus on the COVID-19 data in the U.S. We aim to explore:
+
+- The fluctuations of deaths and cases across time since December, 2019
+    
+- The potential correlation between seasons and deaths and cases
+
+- The potential correlation between vaccination rates and deaths and cases across time
+    
+- The differences in cases, deaths, and vaccinations across states
+
+- The popularity of the main kinds of vaccines (J&J, Pfizer, Moderna) in different states
 
 ---
 
-class: inverse, center, middle
+### COVID-19 Cases and Deaths - The Beginning
+On January 22nd, 2020, the CDC began tracking daily COVID19 cases and deaths
+across the United States and its territories. Eventually, on March 11th, 2020,
+WHO declared COVID-19 a global pandemic. This day also coincided with the NBA
+shutting down indefinitely. Two days later, Bates College announced they would 
+be sending us home!
 
-# Section title
+How do these two key dates compare the worst day(s) of the pandemic?
+```{r, echo = FALSE}
+new_US_deaths_cases <- US_deaths_cases %>%
+  filter(!(state %in% c("NYC", "PR", "GU",
+                           "VI", "MP", "RMI",
+                           "AS", "PW", "FSM"))) %>%
+  group_by(submission_date) %>%
+  summarise(total_new_cases = sum(new_case),
+            total_new_deaths = sum(new_death),
+            total_cases = sum(tot_cases),
+            total_deaths = sum(tot_death)) 
+
+new_US_deaths_cases$submission_date = as.Date(new_US_deaths_cases$submission_date,
+                                              format="%m/%d/%Y")
+
+new_US_deaths_cases <- new_US_deaths_cases %>%
+  arrange(desc(submission_date))
+
+new_US_deaths_cases %>%
+  filter(submission_date %in% c(as.Date("2020-01-22"), 
+                                as.Date("2020-03-11"), 
+                                as.Date("2020-03-13"), 
+                                as.Date("2021-01-06"),
+                                as.Date("2021-01-13"))) %>%
+  reactable()
+```
+
+```{r, echo = FALSE, include = FALSE}
+# How we obtained the date with the highest number of new cases
+new_US_deaths_cases %>% 
+  slice_max(total_new_cases, n = 5) 
+
+max_cases_row <- new_US_deaths_cases %>% 
+  slice_max(total_new_cases, n = 1) 
+
+max_cases_date <- max_cases_row$submission_date
+
+max_cases_date
+```
+
+```{r, echo = FALSE, include = FALSE}
+# How we obtained the date with the highest number of new deaths
+new_US_deaths_cases %>%
+  slice_max(total_new_deaths, n = 5)
+
+max_deaths_row <- new_US_deaths_cases %>% 
+  slice_max(total_new_deaths, n = 1) 
+
+max_deaths_date <- max_deaths_row$submission_date
+
+max_deaths_date
+```
+---
+<html>
+<head>
+<style>
+p {margin-top: 0.5em ;
+   margin-bottom: 1em ;}
+h3 {margin-top: 0.5em ;
+   margin-bottom: 0.5em ;}
+</style>
+</head>
+<body>
+<h3>COVID-19 Cases and Deaths - How did they evolve with time?</h3>
+<p>Throughout this pandemic, we have experienced periods of low cases and deaths and periods of high cases and deaths. These ebbs and flows are typically called "waves". Our first goal was to visualize the "waves" of the pandemic - when were things the worst and when did things seem to be better?</p>
+</body>
+</html>
+
+```{r, echo = FALSE, fig.width=14, fig.height=6}
+new_US_deaths_cases %>%
+  ggplot() +
+  geom_point(aes(x = submission_date, y = total_new_cases)) +
+  labs(title = "Daily New Cases vs. Time",
+       x = "Date",
+       y = "Daily New Cases") +
+  theme_bw() +
+  theme(axis.line = element_line(colour = "black"),
+        axis.text.x = element_text(color = "grey20", 
+                                   size = 15, 
+                                   angle = 0, 
+                                   hjust = .5, 
+                                   vjust = .5, 
+                                   face = "plain"),
+        axis.text.y = element_text(color = "grey20", 
+                                   size = 15, 
+                                   angle = 0, 
+                                   hjust = .5, 
+                                   vjust = .5, 
+                                   face = "plain"),  
+        axis.title.x = element_text(color = "grey20", 
+                                    size = 30, 
+                                    angle = 0, 
+                                    hjust = .5, 
+                                    vjust = 0, 
+                                    face = "plain"),
+        axis.title.y = element_text(color = "grey20", 
+                                    size = 30, 
+                                    angle = 90, 
+                                    hjust = .5, 
+                                    vjust = 1, 
+                                    face = "plain"),
+        plot.title = element_text(color = "grey20", 
+                                    size = 30, 
+                                    angle = 0, 
+                                    hjust = .5, 
+                                    vjust = .5, 
+                                    face = "plain")) +
+  scale_x_date(date_breaks = "2 month", date_labels =  "%b %Y") +
+  scale_y_continuous(breaks = scales::pretty_breaks(n = 10))
+```
+---
+<html>
+<head>
+<style>
+p {margin-top: 0.5em ;
+   margin-bottom: 1em ;}
+h3 {margin-top: 0.5em ;
+   margin-bottom: 0.5em ;}
+</style>
+</head>
+<body>
+<h3>COVID-19 Cases and Deaths - How did they evolve with time?</h3>
+</body>
+</html>
+```{r, echo = FALSE, fig.width=16, fig.height=8}
+new_US_deaths_cases %>%
+  ggplot() +
+  geom_point(aes(x = submission_date, y = total_new_deaths)) +
+  labs(title = "Daily New Deaths vs. Time",
+       x = "Date",
+       y = "Daily New Deaths") +
+  theme_bw() +
+  theme(axis.line = element_line(colour = "black"),
+        axis.text.x = element_text(color = "grey20", 
+                                   size = 15, 
+                                   angle = 0, 
+                                   hjust = .5, 
+                                   vjust = .5, 
+                                   face = "plain"),
+        axis.text.y = element_text(color = "grey20", 
+                                   size = 15, 
+                                   angle = 0, 
+                                   hjust = .5, 
+                                   vjust = .5, 
+                                   face = "plain"),  
+        axis.title.x = element_text(color = "grey20", 
+                                    size = 30, 
+                                    angle = 0, 
+                                    hjust = .5, 
+                                    vjust = 0, 
+                                    face = "plain"),
+        axis.title.y = element_text(color = "grey20", 
+                                    size = 30, 
+                                    angle = 90, 
+                                    hjust = .5, 
+                                    vjust = 1, 
+                                    face = "plain"),
+        plot.title = element_text(color = "grey20", 
+                                    size = 30, 
+                                    angle = 0, 
+                                    hjust = .5, 
+                                    vjust = .5, 
+                                    face = "plain")) +
+  scale_x_date(date_breaks = "2 month", date_labels =  "%b %Y") +
+  scale_y_continuous(breaks = scales::pretty_breaks(n = 10))
+```
+---
+### COVID-19 Cases and Deaths - What is the correlation?
+Typically, when we are comparing two variables $X$ and $Y$, we calculate the 
+correlation coefficient 
+$$\rho = \frac{\sigma_{XY}}{\sigma_X\sigma_Y}$$ 
+The correlation coefficient describes how one variable moves in relation to 
+another. When dealing with time series data and both $X$ and $Y$ 
+are functions of time, the time series $Y_t$ might be related to past lags of 
+the time series $X_t$. In other words, if our time series is discrete 
+(it must be), we want to determine the relationship between $X_{t + h}$ and
+$Y_t$ for $h = 0, \pm 1, \pm 2, ...$. The **cross correlation coefficient** is 
+thus given by
+$$\rho = \frac{\sigma_{X_{t + h}Y_t}}{\sigma_{X_{t + h}}\sigma_{Y_t}}$$ 
+Two things to note :
+
+- When one or more $X_{t + h}$, with $h$ *negative*, are predictors of $Y_t$, 
+it is sometimes said that **x leads y**
+
+- When one or more $X_{t + h}$, with $h$ *positive*, are predictors of $Y_t$, 
+it is sometimes said that **x lags y** $^*$
+
+.footnote[
+$^*$ https://online.stat.psu.edu/stat510/lesson/8/8.2
+]
+---
+### COVID-19 Cases and Deaths - What is the correlation?
+Before we use the R `ccf()` function, let's take a look at the relationship between
+cases and deaths with no lag.
+
+```{r, echo = FALSE, fig.width = 14, fig.height = 6}
+new_US_deaths_cases %>%
+  ggplot() +
+  geom_point(aes(x = total_new_cases, y = total_new_deaths)) +
+  labs(title = "Daily New Deaths vs. Daily New Cases",
+       x = "Daily New Cases",
+       y = "Daily New Deaths") +
+  theme_bw() +
+  theme(axis.line = element_line(colour = "black"),
+        axis.text.x = element_text(color = "grey20", 
+                                   size = 15, 
+                                   angle = 0, 
+                                   hjust = .5, 
+                                   vjust = .5, 
+                                   face = "plain"),
+        axis.text.y = element_text(color = "grey20", 
+                                   size = 15, 
+                                   angle = 0, 
+                                   hjust = .5, 
+                                   vjust = .5, 
+                                   face = "plain"),  
+        axis.title.x = element_text(color = "grey20", 
+                                    size = 30, 
+                                    angle = 0, 
+                                    hjust = .5, 
+                                    vjust = 0, 
+                                    face = "plain"),
+        axis.title.y = element_text(color = "grey20", 
+                                    size = 30, 
+                                    angle = 90, 
+                                    hjust = .5, 
+                                    vjust = 1, 
+                                    face = "plain"),
+        plot.title = element_text(color = "grey20", 
+                                    size = 30, 
+                                    angle = 0, 
+                                    hjust = .5, 
+                                    vjust = .5, 
+                                    face = "plain")) +
+  scale_x_continuous(breaks = scales::pretty_breaks(n = 10)) +
+  scale_y_continuous(breaks = scales::pretty_breaks(n = 10))
+```
+---
+### COVID-19 Cases and Deaths - What is the correlation?
+Before we use the R `ccf()` function, let's take a look at the relationship between
+cases and deaths with no lag:
+
+```{r, echo = FALSE}
+deaths_cases_fit <- linear_reg() %>%
+  set_engine("lm") %>%
+  fit(total_new_deaths ~ total_new_cases, data = new_US_deaths_cases) 
+```
+
+```{r, echo = FALSE, message = FALSE, fig.width = 14, fig.height = 6}
+new_US_deaths_cases %>%
+  ggplot(aes(x = total_new_cases, y = total_new_deaths)) +
+  geom_point() +
+  geom_line(aes(x = total_new_cases, y = augment(deaths_cases_fit$fit)$.fitted), 
+            size = 0.75, 
+            color = "blue") +
+  labs(title = "Daily New Deaths vs. Daily New Cases",
+       x = "Daily New Cases",
+       y = "Daily New Deaths") +
+  theme_bw() +
+  theme(axis.line = element_line(colour = "black"),
+        axis.text.x = element_text(color = "grey20", 
+                                   size = 15, 
+                                   angle = 0, 
+                                   hjust = .5, 
+                                   vjust = .5, 
+                                   face = "plain"),
+        axis.text.y = element_text(color = "grey20", 
+                                   size = 15, 
+                                   angle = 0, 
+                                   hjust = .5, 
+                                   vjust = .5, 
+                                   face = "plain"),  
+        axis.title.x = element_text(color = "grey20", 
+                                    size = 30, 
+                                    angle = 0, 
+                                    hjust = .5, 
+                                    vjust = 0, 
+                                    face = "plain"),
+        axis.title.y = element_text(color = "grey20", 
+                                    size = 30, 
+                                    angle = 90, 
+                                    hjust = .5, 
+                                    vjust = 1, 
+                                    face = "plain"),
+        plot.title = element_text(color = "grey20", 
+                                    size = 30, 
+                                    angle = 0, 
+                                    hjust = .5, 
+                                    vjust = .5, 
+                                    face = "plain")) +
+  scale_x_continuous(breaks = scales::pretty_breaks(n = 10)) +
+  scale_y_continuous(breaks = scales::pretty_breaks(n = 10))
+```
+---
+### COVID-19 Cases and Deaths - What is the correlation?
+Results from the linear regression:
+```{r, echo = FALSE}
+deaths_cases_fit <- linear_reg() %>%
+  set_engine("lm") %>%
+  fit(total_new_deaths ~ total_new_cases, data = new_US_deaths_cases) 
+
+deaths_cases_fit
+
+glance(deaths_cases_fit)
+```
+
+The linear model is given by `y = 0.01146x + 274.67437`. This tells us that for 
+each additionally daily case, we expect the number of daily deaths to increase on 
+average by `0.01146`. Additionally, we can see $R^2 = 0.673$, which indicates 
+that only about 67.3% of the variation in the daily new deaths is dependent on 
+daily new cases.
+---
+### COVID-19 Cases and Deaths - What is the correlation?
+```{r, echo = FALSE, fig.width = 16, fig.height = 7.5}
+xcf_plot <- function(df, x, y, title = "Cross Correlation", lag_var = 100){
+  df_x <- eval(substitute(x), df)
+  df_y <- eval(substitute(y), df)
+  ccf.object <- ccf(df_x, df_y, plot = FALSE, lag.max = lag_var)
+  output_table <- cbind(lag = ccf.object$lag, 
+                        x.corr = ccf.object$acf) %>%
+                          as_tibble() %>%
+                          mutate(cat = ifelse(x.corr > 0, "green", "red"))
+  output_table %>%
+    ggplot(aes(x = lag, y = x.corr)) +
+    geom_bar(stat = "identity", aes(fill = cat)) +
+    scale_fill_manual(values = c("#339933", "#cc0000")) +
+    ylab("Cross Correlation") +
+    xlab("Lag (days)") +
+    scale_y_continuous(limits = c(-1, 1)) +
+    theme_bw() + 
+    theme(legend.position = "none",
+          axis.line = element_line(colour = "black"),
+          axis.text.x = element_text(color = "grey20", 
+                                   size = 15, 
+                                   angle = 0, 
+                                   hjust = .5, 
+                                   vjust = .5, 
+                                   face = "plain"),
+          axis.text.y = element_text(color = "grey20", 
+                                     size = 15, 
+                                     angle = 0, 
+                                     hjust = .5, 
+                                     vjust = .5, 
+                                     face = "plain"),  
+          axis.title.x = element_text(color = "grey20", 
+                                      size = 30, 
+                                      angle = 0, 
+                                      hjust = .5, 
+                                      vjust = 0, 
+                                      face = "plain"),
+          axis.title.y = element_text(color = "grey20", 
+                                      size = 30, 
+                                      angle = 90, 
+                                      hjust = .5, 
+                                      vjust = 1, 
+                                      face = "plain"),
+          plot.title = element_text(color = "grey20", 
+                                      size = 30, 
+                                      angle = 0, 
+                                      hjust = .5, 
+                                      vjust = .5, 
+                                      face = "plain")) +
+    ggtitle(title) -> p
+}     
+
+# run the function
+plot1 <- xcf_plot(df = new_US_deaths_cases, 
+         x = new_US_deaths_cases$total_new_cases, 
+         y = new_US_deaths_cases$total_new_deaths, 
+         title = "Cross Correlation : Daily New Cases and Daily New Deaths")
+
+plot1
+```
+---
+### COVID-19 Cases and Deaths - What is the correlation?
+```{r, echo = FALSE, fig.width = 16, fig.height = 7.5}
+plot2 <- xcf_plot(df = new_US_deaths_cases, 
+         x = new_US_deaths_cases$total_new_cases, 
+         y = new_US_deaths_cases$total_new_deaths, 
+         title = "Cross Correlation : Daily New Cases and Daily New Deaths",
+         lag_var = 10)
+
+plot2
+```
+---
+### COVID-19 Cases and Deaths - What is the correlation?
+```{r, echo = FALSE, fig.show='hide'}
+ccf_raw_data <- ccf(new_US_deaths_cases$total_new_cases, new_US_deaths_cases$total_new_deaths, plot = FALSE, lag.max = 14) 
+
+ccf_raw_data <- data.frame(lag = ccf_raw_data$lag, CCF = ccf_raw_data$acf)
+  
+reactable(ccf_raw_data)
+  
+#data.frame(lag = correlation$ccf$lag, CCF = correlation$ccf$acf)
+```
+---
+### COVID-19 Vaccinations Over Time
+Now let's take a look at how the number people of vaccinated in the United States 
+has evolved with time:
+```{r, echo = FALSE}
+new_US_vaccinations <- US_vaccinations %>%
+  select(Date, Location, Series_Complete_Yes, 
+         Series_Complete_Pop_Pct,
+         Series_Complete_12PlusPop_Pct,
+         Series_Complete_18PlusPop_Pct,
+         Series_Complete_65PlusPop_Pct,
+         Series_Complete_Janssen, Series_Complete_Moderna, 
+         Series_Complete_Pfizer, Series_Complete_Unk_Manuf) %>%
+  filter(Location %in% c("US"))
+
+new_US_vaccinations$Date = as.Date(new_US_vaccinations$Date,
+                                              format="%m/%d/%Y")
+```
+
+```{r, echo = FALSE, fig.width = 14, fig.height = 7}
+new_US_vaccinations %>%
+  filter(Series_Complete_Pop_Pct > 0) %>%
+  ggplot() +
+  geom_point(aes(x = Date, y = Series_Complete_Pop_Pct)) +
+  labs(title = "Percent of US Population Fully Vaccinated vs. Time",
+       x = "Date",
+       y = "Percent of US Population") +
+  theme_bw() +
+  theme(axis.line = element_line(colour = "black"),
+        axis.text.x = element_text(color = "grey20", 
+                                   size = 15, 
+                                   angle = 0, 
+                                   hjust = .5, 
+                                   vjust = .5, 
+                                   face = "plain"),
+        axis.text.y = element_text(color = "grey20", 
+                                   size = 15, 
+                                   angle = 0, 
+                                   hjust = .5, 
+                                   vjust = .5, 
+                                   face = "plain"),  
+        axis.title.x = element_text(color = "grey20", 
+                                    size = 30, 
+                                    angle = 0, 
+                                    hjust = .5, 
+                                    vjust = 0, 
+                                    face = "plain"),
+        axis.title.y = element_text(color = "grey20", 
+                                    size = 30, 
+                                    angle = 90, 
+                                    hjust = .5, 
+                                    vjust = 1, 
+                                    face = "plain"),
+        plot.title = element_text(color = "grey20", 
+                                    size = 30, 
+                                    angle = 0, 
+                                    hjust = .5, 
+                                    vjust = .5, 
+                                    face = "plain")) +
+  scale_x_date(date_breaks = "1 month", date_labels =  "%b %Y") +
+  scale_y_continuous(breaks = scales::pretty_breaks(n = 10))
+```
+---
+### COVID-19 Vaccinations Over Time
+Although the total population of the US is only about ~55% vaccinated as of early 
+October, 2021, this does not paint a full picture. Let's break down this percentage
+by age group:
+
+```{r, echo = FALSE, fig.width = 14, fig.height = 7}
+Pop_Pct.labs <- c("% Fully Vaccinated 12+", 
+                  "% Fully Vaccinated (Total Pop)",
+                  "% Fully Vaccinated 18+", 
+                  "% Fully Vaccinated 65+")
+names(Pop_Pct.labs) <- c("Series_Complete_12PlusPop_Pct", 
+                         "Series_Complete_Pop_Pct",
+                         "Series_Complete_18PlusPop_Pct",
+                         "Series_Complete_65PlusPop_Pct")
+
+new_US_vaccinations %>%
+  filter(Series_Complete_Yes > 0) %>%
+  pivot_longer(cols = c(Series_Complete_Pop_Pct,
+                        Series_Complete_12PlusPop_Pct,
+                        Series_Complete_18PlusPop_Pct,
+                        Series_Complete_65PlusPop_Pct),
+               names_to = "Pop_Pct_Type",
+               values_to = "Pop_Pct") %>%
+  ggplot() +
+  geom_point(aes(x = Date, y = Pop_Pct)) +
+  facet_wrap(~Pop_Pct_Type,
+             labeller = labeller(Pop_Pct_Type = Pop_Pct.labs)) + 
+  labs(title = "Percent of US Population Fully Vaccinated vs. Time",
+       subtitle = "Broken Down by Age Group",
+       x = "Date",
+       y = "Percent of US Population") +
+  theme_bw() +
+  theme(strip.text = element_text(size = 20),
+        axis.line = element_line(colour = "black"),
+        axis.text.x = element_text(color = "grey20", 
+                                   size = 15, 
+                                   angle = 0, 
+                                   hjust = .5, 
+                                   vjust = .5, 
+                                   face = "plain"),
+        axis.text.y = element_text(color = "grey20", 
+                                   size = 15, 
+                                   angle = 0, 
+                                   hjust = .5, 
+                                   vjust = .5, 
+                                   face = "plain"),  
+        axis.title.x = element_text(color = "grey20", 
+                                    size = 30, 
+                                    angle = 0, 
+                                    hjust = .5, 
+                                    vjust = 0, 
+                                    face = "plain"),
+        axis.title.y = element_text(color = "grey20", 
+                                    size = 30, 
+                                    angle = 90, 
+                                    hjust = .5, 
+                                    vjust = 1, 
+                                    face = "plain"),
+        plot.title = element_text(color = "grey20", 
+                                    size = 30, 
+                                    angle = 0, 
+                                    hjust = .5, 
+                                    vjust = .5, 
+                                    face = "plain"),
+        plot.subtitle = element_text(color = "grey20", 
+                                    size = 20, 
+                                    angle = 0, 
+                                    hjust = .5, 
+                                    vjust = .5, 
+                                    face = "plain")) +
+  scale_x_date(date_breaks = "2 month", date_labels =  "%b %Y") +
+  scale_y_continuous(breaks = scales::pretty_breaks(n = 5))
+```
+---
+### Exploring the Relationship Between Vaccinations and Cases/Deaths
+Next, let's take a look at how vaccinations and deaths have evolved over time
+in conjunction with one another:
+
+```{r, echo = FALSE}
+merged_US_data <- inner_join(new_US_vaccinations, new_US_deaths_cases, by = c("Date" = "submission_date")) %>%
+  filter(Series_Complete_Yes > 0)
+```
+
+```{r, echo = FALSE, fig.width = 14, fig.height = 7}
+coeff <- 1
+
+merged_US_data %>%
+  ggplot(aes(x = Date)) +
+  geom_point(aes(y = total_deaths / 10^3), color = "red") + 
+  geom_point(aes(y = Series_Complete_Yes / 10^6), color = "blue") +
+  scale_color_manual(name = "Data", values = c("total_deaths" = "red", "Series_Complete_Yes" = "blue")) +
+  scale_y_continuous(
+    name = "Total # of COVID Deaths (Thousands)",
+    sec.axis = sec_axis(~.*coeff, 
+                        name = "Total # of People Fully Vaccinated (Millions)",
+                        scales::pretty_breaks(n = 10)),
+    breaks = scales::pretty_breaks(n = 10)
+  ) +
+  labs(title = "Total Fully Vaccinated and Total Deaths vs. Time",
+       x = "Date",
+       color = "Color") +
+  theme_bw() +
+  theme(axis.line = element_line(colour = "black"),
+        axis.text.x = element_text(color = "grey20", 
+                                   size = 15, 
+                                   angle = 0, 
+                                   hjust = .5, 
+                                   vjust = .5, 
+                                   face = "plain"),
+        axis.text.y = element_text(color = "grey20", 
+                                   size = 15, 
+                                   angle = 0, 
+                                   hjust = .5, 
+                                   vjust = .5, 
+                                   face = "plain"),
+        axis.title.x = element_text(color = "grey20", 
+                                    size = 30, 
+                                    angle = 0, 
+                                    hjust = .5, 
+                                    vjust = 0, 
+                                    face = "plain"),
+        axis.title.y.left = element_text(color = "red", 
+                                    size = 25, 
+                                    angle = 90, 
+                                    hjust = .5, 
+                                    vjust = 1, 
+                                    face = "plain"),
+        axis.title.y.right = element_text(color = "blue", 
+                                    size = 25, 
+                                    angle = 270, 
+                                    hjust = .5, 
+                                    vjust = 1, 
+                                    face = "plain"),
+        plot.title = element_text(color = "grey20", 
+                                    size = 30, 
+                                    angle = 0, 
+                                    hjust = .5, 
+                                    vjust = .5, 
+                                    face = "plain")) +
+  scale_x_date(date_breaks = "1 month", date_labels =  "%b %Y")
+```
+---
+### Exploring the Relationship Between Vaccinations and Cases/Deaths
 
 ---
 
-# Hello World
+## Number of Vaccinated People
 
-- Click the `Knit` button to compile your presentation
+--
 
-- Make sure to commit and push all resulting files to your GitHub repo
+## Proportion of Vaccinated People
+
+--
+
+## Differences across Age Groups
 
 ---
 
-class: inverse, middle, center
+## COMBINE AND EXPLORE
 
-# Using xaringan
+--
+
+# Have vaccines reduced cases and/or deaths and if so, to what extent?
+
+---
+
+## ADD ANOTHER DIMENSION
+
+--
+
+# Which vaccines are more popular in certain states (J&J, Pfizer, Moderna)?
 
 ---
 
 # xaringan
 
 - The presentation is created using the `xaringan` package
-
-- Use `---` to separate slides and `--` for incremental builds
-
---
-
-- Like this
 
 ---
 

@@ -1,6 +1,6 @@
 ---
-title: "Project proposal"
-author: "Team name"
+title: "Project Proposal"
+author: "omarxinyijohn"
 output: github_document
 ---
 
@@ -11,13 +11,111 @@ library(broom)
 
 ## 1. Introduction
 
+The COVID-19 outbreak first reported in December, 2019 exploded into a global pandemic within weeks and still continues its spread with new waves of infections from new virus variants threatening regions across the globe even as authorities work to increase vaccination availability and roll out new mitigation measures. In the United States alone, more than 700,000 people have lost their lives due to COVID-19, but the vaccine has brought hope for a return to normal. 
 
+The main research question that we will be exploring for this project is how cases and deaths have changed over time in the United States since the COVID-19 pandemic began. We are using two data files for this project, one of which includes cases and death data broken down by state and date, and the other which includes vaccination data broken down by state and date. Both data sources are publicly available on the CDC website. Links can be found in the data section of this proposal. A sampling of more specific questions include the following:
+
+1) Are there any seasonal changes in cases/deaths? How do changes differ across states?
+2) Which vaccines are more popular in certain states (J&J, Pfizer, Moderna)?
+3) Have vaccines reduced cases and/or deaths and if so, to what extent?
+
+These are only some of our initial questions and we will likely try to ask and answer many more questions about these two datasets as we proceed through the project.
 
 ## 2. Data
 
+We are utilizing two datasets from the CDC website for this project. The first one entitled _United States COVID-19 Cases and Deaths by State over Time_ reports aggregate counts of COVID-19 cases and death numbers daily and are based on the most recent numbers reported by states, territories, and other jurisdictions. The second dataset, _COVID-19 Vaccinations in the United States_, shows the overall US COVID-19 Vaccine deliveries and administration data at the national and jurisdiction level.
 
+To learn more about the variables in each dataset, please refer to the README file in the `/data` folder of this project. A preview of the two datasets is shown below using the `glimpse()` function:
+
+```{r view-deaths-cases}
+US_deaths_cases <- 
+  read_csv("/cloud/project/data/United_States_COVID-19_Cases_and_Deaths_by_State_over_Time.csv")
+glimpse(US_deaths_cases)
+```
+
+```{r view-vaccinations}
+US_vaccinations <- 
+  read_csv("/cloud/project/data/COVID-19_Vaccinations_in_the_United_States_Jurisdiction.csv")
+glimpse(US_vaccinations)
+```
+
+Sources:
+
+https://data.cdc.gov/Case-Surveillance/United-States-COVID-19-Cases-and-Deaths-by-State-o/9mfq-cb36
+
+https://data.cdc.gov/Vaccinations/COVID-19-Vaccinations-in-the-United-States-Jurisdi/unsk-b7fc
 
 ## 3. Data analysis plan
 
+To answer the three initial questions we asked above, we need to have separate data analysis and visualization for each of them. We are going to explore more as we moving forward, but here are the specific elements and methods we need to address these three questions at this time.
 
+- Outcome _y_ & Predictor Variable _x_ and Other Variables
+  1) `US_deaths_cases`: 
+  cases/deaths (`tot_cases` / `tot_death`) & time (`submission_date`); states (`group_by(state)`), seasons (`facet_wrap(~season)` / `scale_x_break()`)
+  2) `US_vaccinations`: 
+  J&J, Pfizer, and Moderna vaccine administered (store `Administered_Janssen, Administered_Moderna, Administered_Pfizer` into one variable) & count (no _y_ specified); states ( `facet_wrap(~Location)`); 
+  3) Merge `US_deaths_cases` & `US_vaccinations`: 
+  cases/deaths (`tot_cases` / `tot_death`) & vaccinations/vaccination rates (`Administered` / `Admin_Per_100K`)
+  
+- Data Analysis
+  - Summary Statistics & Visualization
+    - _We are using time series data here, which means that the common summary statistics like mean, median, quantiles, standard deviation, variance, mode etc. are not applicable. But we will definitely find other ways to summarise the data as we proceed through the project._
+    
+    1) Grouped line chart: to reflect changes across time
+    - To reflect the changes across states: `group_by(state)`
+    - To reflect the changes across seasons: `facet_wrap(~season)` or `scale_x_break()` (https://cran.r-project.org/web/packages/ggbreak/vignettes/ggbreak.html)
+    
+    2) Barchart: to reflect the difference between the administered amount of the three vaccine types
+    - For variable x: we need to create a new variable that contains the three vaccine types we want to analyze: J&J, Pfizer, and Moderna vaccine administered
+    - For variable y: we don't need to specify since we only need the amount of vacccinations administered here
+    - To reflect the differences across states: `facet_wrap~(Location)`
+    
+    3) Scatter plot with line (`geom_point`, `geom_smooth`): to reflect the distribution and the trend
+    - For datasets: we need to merge the data in the two datasets to have both cases/deaths and vaccinations administered in the same dataset 
 
+  - Statistical Methods
+    - Growth rate (cases; deaths; vaccinations)
+    - Marginal efficiency of vaccination (the change in vaccinations (_x_) divides the change in cases/deaths (_y_))
+    - Comparative Statics
+
+  - Expected Results
+    1) There are changes in cases/deaths over time relating to seasons and/or states.
+    2) States have difference preference towards the three vaccine types (J&J, Pfizer, Moderna).
+    3) There is a strong/weak positive/negative correlation/no clear linear correlation between the vaccination and cases/deaths.
+
+Sample Visualization:
+
+First we filter the data so it only includes the most up-to-date vaccination numbers as of 10/05/2021:
+
+```{r october-vaccinations}
+October_vaccinations <- filter(US_vaccinations, Date == "10/05/2021")
+```
+
+Next, we take the top 20 locations and create a bar plot to see which vaccines are in each respective location:
+
+```{r vaccine-bar-chart, fig.width=10, fig.height=6}
+October_vaccinations %>% 
+  select(Location, Series_Complete_Yes, Series_Complete_Janssen,
+         Series_Complete_Moderna, Series_Complete_Pfizer, 
+         Series_Complete_Unk_Manuf) %>%
+  group_by(Location) %>%
+  arrange(desc(Series_Complete_Yes)) %>%
+  head(20) %>%
+  pivot_longer(cols = -Location, names_to = "Series_Type") %>%
+  filter(Series_Type == "Series_Complete_Janssen" | 
+           Series_Type == "Series_Complete_Moderna" |
+           Series_Type == "Series_Complete_Pfizer" | 
+           Series_Type == "Series_Complete_Unk_Manuf") %>%
+  ggplot(aes(x = reorder(Location, value), y = value/ 10^6, fill = Series_Type)) +
+  geom_bar(stat = "identity") + 
+  labs(title = "US Vaccinations Breakdown",
+       x = "Location",
+       y = "People (in millions)",
+       fill = "Type of Vaccine") +
+  coord_flip() + 
+  theme_bw() +
+  scale_color_viridis_d() +
+  scale_y_continuous(breaks = scales::pretty_breaks(n = 20))
+```
+ 
+It looks like the Pfizer vaccine is the most popular across the board. If we want a better visualization to compare states, we could filter out the `US` location from this chart.
