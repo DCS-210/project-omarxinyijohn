@@ -389,9 +389,9 @@ glance(deaths_cases_fit)
 ```
 
 The linear model is given by `y = 0.01146x + 274.67437`. This tells us that for 
-each additionally daily case, we expect the number of daily deaths to increase on 
+each additional daily case, we expect the number of daily deaths to increase on 
 average by `0.01146`. Additionally, we can see $R^2 = 0.673$, which indicates 
-that only about 67.3% of the variation in the daily new deaths is dependent on 
+that about 67.3% of the variation in the daily new deaths is dependent on 
 daily new cases.
 ---
 ### COVID-19 Cases and Deaths - What is the correlation?
