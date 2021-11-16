@@ -62,7 +62,7 @@ time series is discrete (it must be), we want to determine the
 relationship between *X*<sub>*t* + *h*</sub> and *Y*<sub>*t*</sub> for
 *h* = 0,  ± 1,  ± 2, ... . The **cross correlation coefficient** is thus
 given by
-$$\\rho = \\frac{\\sigma\_{X\_{t + h}Y\_t}}{\\sigma\_{X\_{t + h}}\\sigma\_{Y\_t}}$$
+$$\\rho=\\frac{\\sigma\_{X\_{t + h}Y\_t}}{\\sigma\_{X\_{t + h}}\\sigma\_{Y\_t}}$$
 Two things to note :
 
 -   When one or more *X*<sub>*t* + *h*</sub>, with *h* *negative*, are
@@ -71,7 +71,7 @@ Two things to note :
 
 -   When one or more *X*<sub>*t* + *h*</sub>, with *h* *positive*, are
     predictors of *Y*<sub>*t*</sub>, it is sometimes said that **x lags
-    y** <sup>\*</sup>
+    y**
 
 In this case, we say cases are a predictor of deaths and cases leads
 deaths, so it makes sense to consider negative values of *h*. If we take

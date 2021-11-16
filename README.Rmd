@@ -1,7 +1,7 @@
 ---
 title: Exploring COVID-19 Data
 author: by omarxinyijohn
-output: github_document
+output: html_document
 ---
 
 ## Summary
@@ -22,15 +22,15 @@ are functions of time, the time series $Y_t$ might be related to past lags of
 the time series $X_t$. In other words, if our time series is discrete 
 (it must be), we want to determine the relationship between $X_{t + h}$ and
 $Y_t$ for $h = 0, \pm 1, \pm 2, ...$ . The **cross correlation coefficient** is 
-thus given by 
-$$\rho = \frac{\sigma_{X_{t + h}Y_t}}{\sigma_{X_{t + h}}\sigma_{Y_t}}$$ 
+thus given by $$\rho = \frac{\sigma_{X_{t + h}Y_t}}{\sigma_{X_{t + h}}\sigma_{Y_t}}$$ 
+
 Two things to note :
 
 - When one or more $X_{t + h}$, with $h$ *negative*, are predictors of $Y_t$, 
 it is sometimes said that **x leads y**
 
 - When one or more $X_{t + h}$, with $h$ *positive*, are predictors of $Y_t$, 
-it is sometimes said that **x lags y** $^*$
+it is sometimes said that **x lags y** 
 
 In this case, we say cases are a predictor of deaths and cases leads deaths, so it makes sense to consider negative values of $h$. If we take a look at our plot of the cross correlation along with the underlying data, it appears that the highest correlation between deaths and cases is at a value of $h = +7$ where correlation $\approx 0.85$. However, this implies that cases in the future (plus seven days) are more related to deaths in the present than cases in the present (i.e. when $h = 0$), which does not make much sense in this context. One interesting thing to note is that the correlation seems to spike every seven days. In other words, there is a local maximum of correlation every seven days. If we let $h = -7$ days (i.e. let the cases variable lead deaths by 7 days), then we have a local minimum of correlation equal to approximately $0.72$. It is difficult to explain why the greatest correlation occurs when $h$ is positive, but it might again be explained by the early pandemic when testing was not widely available, but determining cause of death was easy. In theory, as testing capacity increased, so did case count, which would show that cases lagged deaths for a period of time. 
 
@@ -51,9 +51,9 @@ Our presentation can be found [here](presentation/presentation.html).
 
 ## Data 
 
-Include a citation for your data here. 
-See http://libraryguides.vu.edu.au/c.php?g=386501&p=4347840 for guidance on proper citation for datasets. 
-If you got your data off the web, make sure to note the retrieval date.
+Surveillance Review and Response Group, 2020, *Centers for Disease Control and Prevention, COVID-19 Response. COVID-19 Case Surveillance Public Data Access, Summary, and Limitations*, electronic dataset, Centers for Disease Control and Prevention, <https://data.cdc.gov/Case-Surveillance/United-States-COVID-19-Cases-and-Deaths-by-State-o/9mfq-cb36>.
+
+NCIRD, 2020, *COVID-19 Vaccinations in the United States, Jurisdiction*, electronic dataset, Centers for Disease Control and Prevention, <https://data.cdc.gov/Vaccinations/COVID-19-Vaccinations-in-the-United-States-Jurisdi/unsk-b7fc>.
 
 ## References
 
