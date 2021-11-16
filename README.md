@@ -62,7 +62,8 @@ time series is discrete (it must be), we want to determine the
 relationship between *X*<sub>*t* + *h*</sub> and *Y*<sub>*t*</sub> for
 *h* = 0,  ± 1,  ± 2, ... . The **cross correlation coefficient** is thus
 given by
-$$\\rho=\\frac{\\sigma\_{X\_{t + h}Y\_t}}{\\sigma\_{X\_{t + h}}\\sigma\_{Y\_t}}$$
+$$\\rho = \\frac{\\sigma\_{X\_{t + h}Y\_t}}{\\sigma\_{X\_{t + h}}\\sigma\_{Y\_t}}$$
+
 Two things to note :
 
 -   When one or more *X*<sub>*t* + *h*</sub>, with *h* *negative*, are
@@ -155,10 +156,15 @@ Our presentation can be found [here](presentation/presentation.html).
 
 ## Data
 
-Include a citation for your data here. See
-<http://libraryguides.vu.edu.au/c.php?g=386501&p=4347840> for guidance
-on proper citation for datasets. If you got your data off the web, make
-sure to note the retrieval date.
+Surveillance Review and Response Group, 2020, *Centers for Disease
+Control and Prevention, COVID-19 Response. COVID-19 Case Surveillance
+Public Data Access, Summary, and Limitations*, electronic dataset,
+Centers for Disease Control and Prevention,
+<https://data.cdc.gov/Case-Surveillance/United-States-COVID-19-Cases-and-Deaths-by-State-o/9mfq-cb36>.
+
+NCIRD, 2020, *COVID-19 Vaccinations in the United States, Jurisdiction*,
+electronic dataset, Centers for Disease Control and Prevention,
+<https://data.cdc.gov/Vaccinations/COVID-19-Vaccinations-in-the-United-States-Jurisdi/unsk-b7fc>.
 
 ## References
 

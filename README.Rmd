@@ -1,7 +1,7 @@
 ---
 title: Exploring COVID-19 Data
 author: by omarxinyijohn
-output: html_document
+output: github_document
 ---
 
 ## Summary
