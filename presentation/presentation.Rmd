@@ -63,15 +63,13 @@ Reported first in December, 2019, the COVID-19 pandemic constitutes the largest 
 
 In this project, we focus on the COVID-19 data in the U.S. We aim to explore:
 
-- The fluctuations of deaths and cases across time since December, 2019
-    
-- The potential correlation between seasons and deaths and cases
+- The fluctuations of deaths and cases across time since January, 2020
 
-- The potential correlation between vaccination rates and deaths and cases across time
+- Trying to predict the number of daily new deaths from daily new cases
     
-- The differences in cases, deaths, and vaccinations across states
+- The potential correlation/relationship between seasons and deaths and cases
 
-- The popularity of the main kinds of vaccines (J&J, Pfizer, Moderna) in different states
+- The potential correlation/relationship between vaccination rates and deaths and cases across time
 
 ---
 
@@ -353,6 +351,53 @@ new_US_deaths_cases %>%
 ```
 ---
 ### COVID-19 Cases and Deaths - What is the correlation?
+Let's take a look at the residuals plot to assess whether a linear model is appropriate:
+
+```{r, echo = FALSE, message = FALSE, fig.width = 14, fig.height = 6}
+new_US_deaths_cases %>%
+  ggplot(aes(x = augment(deaths_cases_fit$fit)$.fitted, y = augment(deaths_cases_fit$fit)$.resid)) +
+  geom_point() +
+  geom_hline(yintercept = 0, color = "gray", lty = "dashed") +
+  labs(title = "Predicted Daily New Deaths Residual Plot",
+       x = "Predicted Daily New Deaths",
+       y = "Residuals") +
+  theme_bw() +
+  theme(axis.line = element_line(colour = "black"),
+        axis.text.x = element_text(color = "grey20", 
+                                   size = 15, 
+                                   angle = 0, 
+                                   hjust = .5, 
+                                   vjust = .5, 
+                                   face = "plain"),
+        axis.text.y = element_text(color = "grey20", 
+                                   size = 15, 
+                                   angle = 0, 
+                                   hjust = .5, 
+                                   vjust = .5, 
+                                   face = "plain"),  
+        axis.title.x = element_text(color = "grey20", 
+                                    size = 30, 
+                                    angle = 0, 
+                                    hjust = .5, 
+                                    vjust = 0, 
+                                    face = "plain"),
+        axis.title.y = element_text(color = "grey20", 
+                                    size = 30, 
+                                    angle = 90, 
+                                    hjust = .5, 
+                                    vjust = 1, 
+                                    face = "plain"),
+        plot.title = element_text(color = "grey20", 
+                                    size = 30, 
+                                    angle = 0, 
+                                    hjust = .5, 
+                                    vjust = .5, 
+                                    face = "plain")) +
+  scale_x_continuous(breaks = scales::pretty_breaks(n = 10)) +
+  scale_y_continuous(breaks = scales::pretty_breaks(n = 10))
+```
+---
+### COVID-19 Cases and Deaths - What is the correlation?
 Results from the linear regression:
 ```{r, echo = FALSE}
 deaths_cases_fit <- linear_reg() %>%
@@ -451,7 +496,7 @@ xcf_plot <- function(df, x, y, title = "Cross Correlation", lag_var = 100){
 plot1 <- xcf_plot(df = new_US_deaths_cases, 
          x = new_US_deaths_cases$total_new_cases, 
          y = new_US_deaths_cases$total_new_deaths, 
-         title = "Cross Correlation : Daily New Cases and Daily New Deaths")
+         title = "Cross Correlation : Daily New Cases (X) and Daily New Deaths (Y)")
 
 plot1
 ```
@@ -461,7 +506,7 @@ plot1
 plot2 <- xcf_plot(df = new_US_deaths_cases, 
          x = new_US_deaths_cases$total_new_cases, 
          y = new_US_deaths_cases$total_new_deaths, 
-         title = "Cross Correlation : Daily New Cases and Daily New Deaths",
+         title = "Cross Correlation : Daily New Cases (X) and Daily New Deaths (Y)",
          lag_var = 10)
 
 plot2
@@ -683,11 +728,21 @@ merged_US_data %>%
 ```
 ---
 ### Exploring the Relationship Between Vaccinations and Cases/Deaths
-```{r, echo = FALSE, fig.width = 16, fig.height = 7.5}
+```{r, echo = FALSE, include = FALSE, fig.width = 16, fig.height = 7.5}
 vax_deaths_ccf_plot <- xcf_plot(df = merged_US_data, 
          x = merged_US_data$Series_Complete_Pop_Pct, 
          y = merged_US_data$total_new_deaths, 
-         title = "Cross Correlation : Daily New Deaths and Fully Vaccinated Percent of Population",
+         title = "Cross Correlation : Daily New Deaths (X) and Total Population Fully Vaccinated (Y)",
+         lag_var = 250)
+
+vax_deaths_ccf_plot
+```
+
+```{r, echo = FALSE, fig.width = 16, fig.height = 7.5}
+vax_deaths_ccf_plot <- xcf_plot(df = merged_US_data, 
+         x = merged_US_data$Series_Complete_Yes, 
+         y = merged_US_data$total_new_deaths, 
+         title = "Cross Correlation : Daily New Deaths (X) and Total Population Fully Vaccinated (Y)",
          lag_var = 250)
 
 vax_deaths_ccf_plot
@@ -696,9 +751,9 @@ vax_deaths_ccf_plot
 ### Exploring the Relationship Between Vaccinations and Cases/Deaths
 ```{r, echo = FALSE, fig.width = 16, fig.height = 7.5}
 vax_deaths_ccf_plot <- xcf_plot(df = merged_US_data, 
-         x = merged_US_data$Series_Complete_Pop_Pct, 
+         x = merged_US_data$Series_Complete_Yes, 
          y = merged_US_data$total_new_deaths, 
-         title = "Cross Correlation : Daily New Deaths and Fully Vaccinated Percent of Population",
+         title = "Cross Correlation : Daily New Deaths (X) and Total Population Fully Vaccinated (Y)",
          lag_var = 100)
 
 vax_deaths_ccf_plot
@@ -706,7 +761,7 @@ vax_deaths_ccf_plot
 ---
 ### Exploring the Relationship Between Vaccinations and Cases/Deaths
 ```{r, echo = FALSE, fig.show='hide'}
-ccf_raw_data2 <- ccf(merged_US_data$Series_Complete_Pop_Pct, merged_US_data$total_new_deaths, plot = FALSE, lag.max = 100) 
+ccf_raw_data2 <- ccf(merged_US_data$Series_Complete_Yes, merged_US_data$total_new_deaths, plot = FALSE, lag.max = 100) 
 
 ccf_raw_data2 <- data.frame(lag = ccf_raw_data2$lag, CCF = ccf_raw_data2$acf)
   
