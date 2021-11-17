@@ -4,7 +4,7 @@
     <title>DCS210 Final Project</title>
     <meta charset="utf-8" />
     <meta name="author" content="omarxinyijohn   John Mieszczanski &amp; Omar Sarr &amp; Xinyi Zhang" />
-    <meta name="date" content="2021-11-15" />
+    <meta name="date" content="2021-11-17" />
     <script src="libs/header-attrs-2.11/header-attrs.js"></script>
     <script src="libs/core-js-2.5.3/shim.min.js"></script>
     <script src="libs/react-17.0.0/react.min.js"></script>
@@ -22,7 +22,7 @@ class: center, middle, inverse, title-slide
 ## Exploring COVID-19 Data
 ### omarxinyijohn <br> John Mieszczanski &amp; Omar Sarr &amp; Xinyi Zhang
 ### Bates College
-### 2021-11-15
+### 2021-11-17
 
 ---
 
@@ -62,8 +62,8 @@ shutting down indefinitely. Two days later, Bates College announced they would
 be sending us home!
 
 How do these two key dates compare the worst day(s) of the pandemic?
-<div id="htmlwidget-fd05284ae6e629279406" class="reactable html-widget" style="width:auto;height:auto;"></div>
-<script type="application/json" data-for="htmlwidget-fd05284ae6e629279406">{"x":{"tag":{"name":"Reactable","attribs":{"data":{"submission_date":["2021-01-13","2021-01-06","2020-03-13","2020-03-11","2020-01-22"],"total_new_cases":[232342,286542,1211,796,7],"total_new_deaths":[4095,4040,10,14,0],"total_cases":[22914389,21284925,6750,4464,7],"total_deaths":[388855,363853,296,279,0]},"columns":[{"accessor":"submission_date","name":"submission_date","type":"Date"},{"accessor":"total_new_cases","name":"total_new_cases","type":"numeric"},{"accessor":"total_new_deaths","name":"total_new_deaths","type":"numeric"},{"accessor":"total_cases","name":"total_cases","type":"numeric"},{"accessor":"total_deaths","name":"total_deaths","type":"numeric"}],"defaultPageSize":10,"paginationType":"numbers","showPageInfo":true,"minRows":1,"dataKey":"b6435a103110c66afc4fb2fd4955db14","key":"b6435a103110c66afc4fb2fd4955db14"},"children":[]},"class":"reactR_markup"},"evals":[],"jsHooks":[]}</script>
+<div id="htmlwidget-f396da20276893560254" class="reactable html-widget" style="width:auto;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-f396da20276893560254">{"x":{"tag":{"name":"Reactable","attribs":{"data":{"submission_date":["2021-01-13","2021-01-06","2020-03-13","2020-03-11","2020-01-22"],"total_new_cases":[232342,286542,1211,796,7],"total_new_deaths":[4095,4040,10,14,0],"total_cases":[22914389,21284925,6750,4464,7],"total_deaths":[388855,363853,296,279,0]},"columns":[{"accessor":"submission_date","name":"submission_date","type":"Date"},{"accessor":"total_new_cases","name":"total_new_cases","type":"numeric"},{"accessor":"total_new_deaths","name":"total_new_deaths","type":"numeric"},{"accessor":"total_cases","name":"total_cases","type":"numeric"},{"accessor":"total_deaths","name":"total_deaths","type":"numeric"}],"defaultPageSize":10,"paginationType":"numbers","showPageInfo":true,"minRows":1,"dataKey":"b6435a103110c66afc4fb2fd4955db14","key":"b6435a103110c66afc4fb2fd4955db14"},"children":[]},"class":"reactR_markup"},"evals":[],"jsHooks":[]}</script>
 
 
 
@@ -102,30 +102,6 @@ h3 {margin-top: 0.5em ;
 ![](presentation_files/figure-html/unnamed-chunk-6-1.png)&lt;!-- --&gt;
 ---
 ### COVID-19 Cases and Deaths - What is the correlation?
-Typically, when we are comparing two variables `\(X\)` and `\(Y\)`, we calculate the 
-correlation coefficient 
-`$$\rho = \frac{\sigma_{XY}}{\sigma_X\sigma_Y}$$` 
-The correlation coefficient describes how one variable moves in relation to 
-another. When dealing with time series data and both `\(X\)` and `\(Y\)` 
-are functions of time, the time series `\(Y_t\)` might be related to past lags of 
-the time series `\(X_t\)`. In other words, if our time series is discrete 
-(it must be), we want to determine the relationship between `\(X_{t + h}\)` and
-`\(Y_t\)` for `\(h = 0, \pm 1, \pm 2, ...\)`. The **cross correlation coefficient** is 
-thus given by
-`$$\rho = \frac{\sigma_{X_{t + h}Y_t}}{\sigma_{X_{t + h}}\sigma_{Y_t}}$$` 
-Two things to note :
-
-- When one or more `\(X_{t + h}\)`, with `\(h\)` *negative*, are predictors of `\(Y_t\)`, 
-it is sometimes said that **x leads y**
-
-- When one or more `\(X_{t + h}\)`, with `\(h\)` *positive*, are predictors of `\(Y_t\)`, 
-it is sometimes said that **x lags y** `\(^*\)`
-
-.footnote[
-`\(^*\)` https://online.stat.psu.edu/stat510/lesson/8/8.2
-]
----
-### COVID-19 Cases and Deaths - What is the correlation?
 Before we use the R `ccf()` function, let's take a look at the relationship between
 cases and deaths with no lag:
 
@@ -145,7 +121,7 @@ Results from the linear regression:
 ```
 ## parsnip model object
 ## 
-## Fit time:  1ms 
+## Fit time:  2ms 
 ## 
 ## Call:
 ## stats::lm(formula = total_new_deaths ~ total_new_cases, data = data)
@@ -170,14 +146,38 @@ that about 67.3% of the variation in the daily new deaths is dependent on
 daily new cases.
 ---
 ### COVID-19 Cases and Deaths - What is the correlation?
+Typically, when we are comparing two variables `\(X\)` and `\(Y\)`, we calculate the 
+correlation coefficient 
+`$$\rho = \frac{\sigma_{XY}}{\sigma_X\sigma_Y}$$` 
+The correlation coefficient describes how one variable moves in relation to 
+another. When dealing with time series data and both `\(X\)` and `\(Y\)` 
+are functions of time, the time series `\(Y_t\)` might be related to past lags of 
+the time series `\(X_t\)`. In other words, if our time series is discrete 
+(it must be), we want to determine the relationship between `\(X_{t + h}\)` and
+`\(Y_t\)` for `\(h = 0, \pm 1, \pm 2, ...\)`. The **cross correlation coefficient** is 
+thus given by
+`$$\rho = \frac{\sigma_{X_{t + h}Y_t}}{\sigma_{X_{t + h}}\sigma_{Y_t}}$$` 
+Two things to note :
+
+- When one or more `\(X_{t + h}\)`, with `\(h\)` *negative*, are predictors of `\(Y_t\)`, 
+it is sometimes said that **x leads y**
+
+- When one or more `\(X_{t + h}\)`, with `\(h\)` *positive*, are predictors of `\(Y_t\)`, 
+it is sometimes said that **x lags y** `\(^*\)`
+
+.footnote[
+`\(^*\)` https://online.stat.psu.edu/stat510/lesson/8/8.2
+]
+---
+### COVID-19 Cases and Deaths - What is the correlation?
 ![](presentation_files/figure-html/unnamed-chunk-11-1.png)&lt;!-- --&gt;
 ---
 ### COVID-19 Cases and Deaths - What is the correlation?
 ![](presentation_files/figure-html/unnamed-chunk-12-1.png)&lt;!-- --&gt;
 ---
 ### COVID-19 Cases and Deaths - What is the correlation?
-<div id="htmlwidget-c03f60882f062fe696cc" class="reactable html-widget" style="width:auto;height:auto;"></div>
-<script type="application/json" data-for="htmlwidget-c03f60882f062fe696cc">{"x":{"tag":{"name":"Reactable","attribs":{"data":{"lag":[-14,-13,-12,-11,-10,-9,-8,-7,-6,-5,-4,-3,-2,-1,0,1,2,3,4,5,6,7,8,9,10,11,12,13,14],"CCF":[0.615668424623971,0.606773140455285,0.59186688302889,0.593973717825131,0.618641552254152,0.659613299285235,0.70125876571578,0.722280253922383,0.708958451876537,0.687850806985028,0.687962957595549,0.711616677481224,0.754171830561287,0.799068675949353,0.820502227153397,0.796409771368472,0.763673282639324,0.752818541854009,0.768960473702557,0.803219475801107,0.840492750961459,0.852195623010247,0.828596579563542,0.79344775594735,0.779349918908669,0.787212753058398,0.815599374576751,0.847000704762521,0.855138637319276]},"columns":[{"accessor":"lag","name":"lag","type":"numeric"},{"accessor":"CCF","name":"CCF","type":"numeric"}],"defaultPageSize":10,"paginationType":"numbers","showPageInfo":true,"minRows":1,"dataKey":"73cb36252ca6b8200959be914ee4eb77","key":"73cb36252ca6b8200959be914ee4eb77"},"children":[]},"class":"reactR_markup"},"evals":[],"jsHooks":[]}</script>
+<div id="htmlwidget-424aef558337072faeff" class="reactable html-widget" style="width:auto;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-424aef558337072faeff">{"x":{"tag":{"name":"Reactable","attribs":{"data":{"lag":[-14,-13,-12,-11,-10,-9,-8,-7,-6,-5,-4,-3,-2,-1,0,1,2,3,4,5,6,7,8,9,10,11,12,13,14],"CCF":[0.615668424623971,0.606773140455285,0.59186688302889,0.593973717825131,0.618641552254152,0.659613299285235,0.70125876571578,0.722280253922383,0.708958451876537,0.687850806985028,0.687962957595549,0.711616677481224,0.754171830561287,0.799068675949353,0.820502227153397,0.796409771368472,0.763673282639324,0.752818541854009,0.768960473702557,0.803219475801107,0.840492750961459,0.852195623010247,0.828596579563542,0.79344775594735,0.779349918908669,0.787212753058398,0.815599374576751,0.847000704762521,0.855138637319276]},"columns":[{"accessor":"lag","name":"lag","type":"numeric"},{"accessor":"CCF","name":"CCF","type":"numeric"}],"defaultPageSize":10,"paginationType":"numbers","showPageInfo":true,"minRows":1,"dataKey":"73cb36252ca6b8200959be914ee4eb77","key":"73cb36252ca6b8200959be914ee4eb77"},"children":[]},"class":"reactR_markup"},"evals":[],"jsHooks":[]}</script>
 ---
 ### COVID-19 Vaccinations Over Time
 Now let's take a look at how the number people of vaccinated in the United States 
@@ -208,15 +208,15 @@ in conjunction with one another:
 ![](presentation_files/figure-html/unnamed-chunk-20-1.png)&lt;!-- --&gt;
 ---
 ### Exploring the Relationship Between Vaccinations and Cases/Deaths
-<div id="htmlwidget-e0017011d6b3effbcb78" class="reactable html-widget" style="width:auto;height:auto;"></div>
-<script type="application/json" data-for="htmlwidget-e0017011d6b3effbcb78">{"x":{"tag":{"name":"Reactable","attribs":{"data":{"lag":[-100,-99,-98,-97,-96,-95,-94,-93,-92,-91,-90,-89,-88,-87,-86,-85,-84,-83,-82,-81,-80,-79,-78,-77,-76,-75,-74,-73,-72,-71,-70,-69,-68,-67,-66,-65,-64,-63,-62,-61,-60,-59,-58,-57,-56,-55,-54,-53,-52,-51,-50,-49,-48,-47,-46,-45,-44,-43,-42,-41,-40,-39,-38,-37,-36,-35,-34,-33,-32,-31,-30,-29,-28,-27,-26,-25,-24,-23,-22,-21,-20,-19,-18,-17,-16,-15,-14,-13,-12,-11,-10,-9,-8,-7,-6,-5,-4,-3,-2,-1,0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,66,67,68,69,70,71,72,73,74,75,76,77,78,79,80,81,82,83,84,85,86,87,88,89,90,91,92,93,94,95,96,97,98,99,100],"CCF":[-0.213135762799559,-0.217674355047164,-0.22148782466719,-0.225443377135241,-0.229529785527996,-0.232998805944968,-0.237612174039791,-0.242515737868763,-0.247478587229213,-0.251637217471438,-0.255244729290099,-0.259234529614448,-0.262354391480704,-0.266689173743832,-0.271093871243317,-0.274678384125442,-0.277211547571199,-0.279671505956697,-0.282196251997183,-0.28468525171148,-0.288295502840372,-0.292209162935507,-0.295310576416665,-0.297821468616373,-0.299293910635207,-0.301325088475322,-0.302699629456857,-0.304922069366371,-0.307494438606007,-0.309109151195919,-0.309449796766512,-0.310179445181138,-0.310496839910746,-0.310435445979385,-0.311343142026032,-0.312835226565531,-0.31266744609303,-0.310755275516723,-0.30851673018296,-0.306175575970841,-0.302817434981995,-0.300993016345283,-0.300234407545118,-0.297594663395304,-0.292830705744017,-0.287727635286574,-0.282414429511867,-0.275359755242858,-0.271216241566074,-0.268451679062683,-0.264733326763401,-0.257189629120358,-0.246860661941828,-0.238059560035653,-0.227426209117082,-0.22043323366034,-0.216273878026079,-0.209241788377076,-0.197536914874991,-0.185591164673128,-0.172975847321114,-0.159205360042184,-0.14972685934883,-0.14272085085002,-0.134715614536875,-0.122595961073569,-0.108338512360974,-0.0935159072768379,-0.0789706610448267,-0.0694311910376196,-0.0625758780481863,-0.0567525928814407,-0.0462615619506106,-0.0310062220841358,-0.014762461586339,0.00235889906147217,0.0127290330316796,0.0194257727725771,0.0267740693994233,0.044124347914711,0.0598069373139969,0.074238264579703,0.0903384958881356,0.0997171170697673,0.105078435389111,0.112193899987233,0.126908845448529,0.140705182764359,0.154227469432556,0.169972292187762,0.176844571062421,0.180044204189413,0.186505901108585,0.19923940895499,0.214852613443078,0.227542699711923,0.242545956445132,0.248044295417816,0.24950427068907,0.25358474768785,0.268555419857301,0.288170579003383,0.297304360096526,0.300190464576921,0.305131443147081,0.313475421529293,0.324465820075822,0.33332407917034,0.34239972487469,0.34659539802785,0.34751452469089,0.3496171725843,0.355499098041904,0.360008675778288,0.361668766423743,0.370607543943236,0.374171395839336,0.374187751794571,0.375153980069916,0.378020256114519,0.383384260599459,0.387203395960359,0.393408206274295,0.396258337533705,0.395374185401365,0.39646593712169,0.400165642353141,0.40592200519402,0.408803940595507,0.411812924729443,0.415078274070972,0.414430614717551,0.412583005504076,0.416837193710631,0.420818687214558,0.424701268748854,0.429054044703521,0.43182243959802,0.430727162308562,0.431900856497439,0.437256135626931,0.441074354369007,0.444934010187798,0.450854620756399,0.453142499174504,0.453330106162751,0.454131735671278,0.459364648899725,0.463215561585123,0.467132767627108,0.47348595116861,0.477102073539374,0.476518580818128,0.477368317146191,0.478794164073509,0.484295625826081,0.488099594791437,0.492687810709056,0.493709396795181,0.492534268808334,0.492810432866188,0.496927291263942,0.499505801126525,0.501472693613946,0.506114347022897,0.506812448322354,0.504647415697706,0.502954857288966,0.504971195666945,0.507414278262229,0.508242442107902,0.511112553367622,0.50980482751872,0.507820476072615,0.505258684598505,0.506482141366428,0.506603930181483,0.505278172373261,0.506296813045514,0.503444251519215,0.497788410795871,0.493848585972476,0.492042411123827,0.489736283984402,0.487713497825144,0.486465933749515,0.481735972652718,0.474915301044955,0.467745146363638,0.461372635069913,0.457033575441477,0.45192909510255,0.449110124552524,0.44217738529537,0.433425118501859,0.42603097797703,0.417727003777525,0.409379313609733,0.401805172590755,0.39414057557652,0.385132024329475]},"columns":[{"accessor":"lag","name":"lag","type":"numeric"},{"accessor":"CCF","name":"CCF","type":"numeric"}],"defaultPageSize":10,"paginationType":"numbers","showPageInfo":true,"minRows":1,"dataKey":"e390bc11220c3a61455864d3d0e13a1e","key":"e390bc11220c3a61455864d3d0e13a1e"},"children":[]},"class":"reactR_markup"},"evals":[],"jsHooks":[]}</script>
+<div id="htmlwidget-e4a3a0d853e11a029dc7" class="reactable html-widget" style="width:auto;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-e4a3a0d853e11a029dc7">{"x":{"tag":{"name":"Reactable","attribs":{"data":{"lag":[-100,-99,-98,-97,-96,-95,-94,-93,-92,-91,-90,-89,-88,-87,-86,-85,-84,-83,-82,-81,-80,-79,-78,-77,-76,-75,-74,-73,-72,-71,-70,-69,-68,-67,-66,-65,-64,-63,-62,-61,-60,-59,-58,-57,-56,-55,-54,-53,-52,-51,-50,-49,-48,-47,-46,-45,-44,-43,-42,-41,-40,-39,-38,-37,-36,-35,-34,-33,-32,-31,-30,-29,-28,-27,-26,-25,-24,-23,-22,-21,-20,-19,-18,-17,-16,-15,-14,-13,-12,-11,-10,-9,-8,-7,-6,-5,-4,-3,-2,-1,0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,66,67,68,69,70,71,72,73,74,75,76,77,78,79,80,81,82,83,84,85,86,87,88,89,90,91,92,93,94,95,96,97,98,99,100],"CCF":[-0.213135762799559,-0.217674355047164,-0.22148782466719,-0.225443377135241,-0.229529785527996,-0.232998805944968,-0.237612174039791,-0.242515737868763,-0.247478587229213,-0.251637217471438,-0.255244729290099,-0.259234529614448,-0.262354391480704,-0.266689173743832,-0.271093871243317,-0.274678384125442,-0.277211547571199,-0.279671505956697,-0.282196251997183,-0.28468525171148,-0.288295502840372,-0.292209162935507,-0.295310576416665,-0.297821468616373,-0.299293910635207,-0.301325088475322,-0.302699629456857,-0.304922069366371,-0.307494438606007,-0.309109151195919,-0.309449796766512,-0.310179445181138,-0.310496839910746,-0.310435445979385,-0.311343142026032,-0.312835226565531,-0.31266744609303,-0.310755275516723,-0.30851673018296,-0.306175575970841,-0.302817434981995,-0.300993016345283,-0.300234407545118,-0.297594663395304,-0.292830705744017,-0.287727635286574,-0.282414429511867,-0.275359755242858,-0.271216241566074,-0.268451679062683,-0.264733326763401,-0.257189629120358,-0.246860661941828,-0.238059560035653,-0.227426209117082,-0.22043323366034,-0.216273878026079,-0.209241788377076,-0.197536914874991,-0.185591164673128,-0.172975847321114,-0.159205360042184,-0.14972685934883,-0.14272085085002,-0.134715614536875,-0.122595961073569,-0.108338512360974,-0.0935159072768379,-0.0789706610448267,-0.0694311910376196,-0.0625758780481863,-0.0567525928814407,-0.0462615619506106,-0.0310062220841358,-0.014762461586339,0.00235889906147217,0.0127290330316796,0.0194257727725771,0.0267740693994233,0.044124347914711,0.0598069373139969,0.074238264579703,0.0903384958881356,0.0997171170697673,0.105078435389111,0.112193899987233,0.126908845448529,0.140705182764359,0.154227469432556,0.169972292187762,0.176844571062421,0.180044204189413,0.186505901108585,0.19923940895499,0.214852613443078,0.227542699711923,0.242545956445132,0.248044295417816,0.24950427068907,0.25358474768785,0.268555419857301,0.288170579003383,0.297304360096526,0.300190464576921,0.305131443147081,0.313475421529293,0.324465820075822,0.33332407917034,0.34239972487469,0.34659539802785,0.34751452469089,0.3496171725843,0.355499098041904,0.360008675778288,0.361668766423743,0.370607543943236,0.374171395839336,0.374187751794571,0.375153980069916,0.378020256114519,0.383384260599459,0.387203395960359,0.393408206274295,0.396258337533705,0.395374185401365,0.39646593712169,0.400165642353141,0.40592200519402,0.408803940595507,0.411812924729443,0.415078274070972,0.414430614717551,0.412583005504076,0.416837193710631,0.420818687214558,0.424701268748854,0.429054044703521,0.43182243959802,0.430727162308562,0.431900856497439,0.437256135626931,0.441074354369007,0.444934010187798,0.450854620756399,0.453142499174504,0.453330106162751,0.454131735671278,0.459364648899725,0.463215561585123,0.467132767627108,0.47348595116861,0.477102073539374,0.476518580818128,0.477368317146191,0.478794164073509,0.484295625826081,0.488099594791437,0.492687810709056,0.493709396795181,0.492534268808334,0.492810432866188,0.496927291263942,0.499505801126525,0.501472693613946,0.506114347022897,0.506812448322354,0.504647415697706,0.502954857288966,0.504971195666945,0.507414278262229,0.508242442107902,0.511112553367622,0.50980482751872,0.507820476072615,0.505258684598505,0.506482141366428,0.506603930181483,0.505278172373261,0.506296813045514,0.503444251519215,0.497788410795871,0.493848585972476,0.492042411123827,0.489736283984402,0.487713497825144,0.486465933749515,0.481735972652718,0.474915301044955,0.467745146363638,0.461372635069913,0.457033575441477,0.45192909510255,0.449110124552524,0.44217738529537,0.433425118501859,0.42603097797703,0.417727003777525,0.409379313609733,0.401805172590755,0.39414057557652,0.385132024329475]},"columns":[{"accessor":"lag","name":"lag","type":"numeric"},{"accessor":"CCF","name":"CCF","type":"numeric"}],"defaultPageSize":10,"paginationType":"numbers","showPageInfo":true,"minRows":1,"dataKey":"e390bc11220c3a61455864d3d0e13a1e","key":"e390bc11220c3a61455864d3d0e13a1e"},"children":[]},"class":"reactR_markup"},"evals":[],"jsHooks":[]}</script>
 ---
 ### Exploring the Seasonality of COVID-19
 Let's explore the relationship between COVID-19 and the four seasons:
 
 
-<div id="htmlwidget-5719979fb2cd4d2befe6" class="reactable html-widget" style="width:auto;height:auto;"></div>
-<script type="application/json" data-for="htmlwidget-5719979fb2cd4d2befe6">{"x":{"tag":{"name":"Reactable","attribs":{"data":{"season":["Fall","Spring","Summer","Winter"],"median_ncases":[86178,26539,45333.5,114615],"median_ndeaths":[964,663,708,2275],"mean_ncases":[94741.6428571429,32010.0706521739,55820.5217391304,111475.248062016],"mean_ndeaths":[1125,780.233695652174,719.423913043478,1860.73643410853],"sd_ncases":[50830.6077759398,19627.5833506379,43210.6982877295,92795.6783835991],"sd_ndeaths":[492.16530556308,530.913085778405,390.067634143699,1387.18077701333],"min_ncases":[23414,77,8167,0],"max_ncases":[199128,74299,187655,286542],"iqr_ncases":[90448,28182.75,45957.5,194425]},"columns":[{"accessor":"season","name":"season","type":"character"},{"accessor":"median_ncases","name":"median_ncases","type":"numeric"},{"accessor":"median_ndeaths","name":"median_ndeaths","type":"numeric"},{"accessor":"mean_ncases","name":"mean_ncases","type":"numeric"},{"accessor":"mean_ndeaths","name":"mean_ndeaths","type":"numeric"},{"accessor":"sd_ncases","name":"sd_ncases","type":"numeric"},{"accessor":"sd_ndeaths","name":"sd_ndeaths","type":"numeric"},{"accessor":"min_ncases","name":"min_ncases","type":"numeric"},{"accessor":"max_ncases","name":"max_ncases","type":"numeric"},{"accessor":"iqr_ncases","name":"iqr_ncases","type":"numeric"}],"defaultPageSize":10,"paginationType":"numbers","showPageInfo":true,"minRows":1,"dataKey":"d6f277635197c51923d123d45247998e","key":"d6f277635197c51923d123d45247998e"},"children":[]},"class":"reactR_markup"},"evals":[],"jsHooks":[]}</script>
+<div id="htmlwidget-2814b22ff8a5ec24af5a" class="reactable html-widget" style="width:auto;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-2814b22ff8a5ec24af5a">{"x":{"tag":{"name":"Reactable","attribs":{"data":{"season":["Fall","Spring","Summer","Winter"],"median_ncases":[86178,26539,45333.5,114615],"median_ndeaths":[964,663,708,2275],"mean_ncases":[94741.6428571429,32010.0706521739,55820.5217391304,111475.248062016],"mean_ndeaths":[1125,780.233695652174,719.423913043478,1860.73643410853],"sd_ncases":[50830.6077759398,19627.5833506379,43210.6982877295,92795.6783835991],"sd_ndeaths":[492.16530556308,530.913085778405,390.067634143699,1387.18077701333],"min_ncases":[23414,77,8167,0],"max_ncases":[199128,74299,187655,286542],"iqr_ncases":[90448,28182.75,45957.5,194425]},"columns":[{"accessor":"season","name":"season","type":"character"},{"accessor":"median_ncases","name":"median_ncases","type":"numeric"},{"accessor":"median_ndeaths","name":"median_ndeaths","type":"numeric"},{"accessor":"mean_ncases","name":"mean_ncases","type":"numeric"},{"accessor":"mean_ndeaths","name":"mean_ndeaths","type":"numeric"},{"accessor":"sd_ncases","name":"sd_ncases","type":"numeric"},{"accessor":"sd_ndeaths","name":"sd_ndeaths","type":"numeric"},{"accessor":"min_ncases","name":"min_ncases","type":"numeric"},{"accessor":"max_ncases","name":"max_ncases","type":"numeric"},{"accessor":"iqr_ncases","name":"iqr_ncases","type":"numeric"}],"defaultPageSize":10,"paginationType":"numbers","showPageInfo":true,"minRows":1,"dataKey":"d6f277635197c51923d123d45247998e","key":"d6f277635197c51923d123d45247998e"},"children":[]},"class":"reactR_markup"},"evals":[],"jsHooks":[]}</script>
 
 ---
 ### Exploring the Seasonality of COVID-19
@@ -233,7 +233,7 @@ the `season` variable:
 ```
 ## parsnip model object
 ## 
-## Fit time:  2ms 
+## Fit time:  3ms 
 ## 
 ## Call:
 ## stats::lm(formula = total_new_cases ~ factor(season), data = data)
@@ -281,7 +281,7 @@ deaths_cases_main_fit
 ```
 ## parsnip model object
 ## 
-## Fit time:  1ms 
+## Fit time:  3ms 
 ## 
 ## Call:
 ## stats::lm(formula = total_new_deaths ~ total_new_cases + factor(season), 
@@ -305,7 +305,7 @@ deaths_cases_int_fit
 ```
 ## parsnip model object
 ## 
-## Fit time:  3ms 
+## Fit time:  2ms 
 ## 
 ## Call:
 ## stats::lm(formula = total_new_deaths ~ total_new_cases * factor(season), 

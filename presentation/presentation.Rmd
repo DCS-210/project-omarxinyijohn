@@ -250,30 +250,6 @@ new_US_deaths_cases %>%
 ```
 ---
 ### COVID-19 Cases and Deaths - What is the correlation?
-Typically, when we are comparing two variables $X$ and $Y$, we calculate the 
-correlation coefficient 
-$$\rho = \frac{\sigma_{XY}}{\sigma_X\sigma_Y}$$ 
-The correlation coefficient describes how one variable moves in relation to 
-another. When dealing with time series data and both $X$ and $Y$ 
-are functions of time, the time series $Y_t$ might be related to past lags of 
-the time series $X_t$. In other words, if our time series is discrete 
-(it must be), we want to determine the relationship between $X_{t + h}$ and
-$Y_t$ for $h = 0, \pm 1, \pm 2, ...$. The **cross correlation coefficient** is 
-thus given by
-$$\rho = \frac{\sigma_{X_{t + h}Y_t}}{\sigma_{X_{t + h}}\sigma_{Y_t}}$$ 
-Two things to note :
-
-- When one or more $X_{t + h}$, with $h$ *negative*, are predictors of $Y_t$, 
-it is sometimes said that **x leads y**
-
-- When one or more $X_{t + h}$, with $h$ *positive*, are predictors of $Y_t$, 
-it is sometimes said that **x lags y** $^*$
-
-.footnote[
-$^*$ https://online.stat.psu.edu/stat510/lesson/8/8.2
-]
----
-### COVID-19 Cases and Deaths - What is the correlation?
 Before we use the R `ccf()` function, let's take a look at the relationship between
 cases and deaths with no lag:
 
@@ -393,6 +369,30 @@ each additional daily case, we expect the number of daily deaths to increase on
 average by `0.01146`. Additionally, we can see $R^2 = 0.673$, which indicates 
 that about 67.3% of the variation in the daily new deaths is dependent on 
 daily new cases.
+---
+### COVID-19 Cases and Deaths - What is the correlation?
+Typically, when we are comparing two variables $X$ and $Y$, we calculate the 
+correlation coefficient 
+$$\rho = \frac{\sigma_{XY}}{\sigma_X\sigma_Y}$$ 
+The correlation coefficient describes how one variable moves in relation to 
+another. When dealing with time series data and both $X$ and $Y$ 
+are functions of time, the time series $Y_t$ might be related to past lags of 
+the time series $X_t$. In other words, if our time series is discrete 
+(it must be), we want to determine the relationship between $X_{t + h}$ and
+$Y_t$ for $h = 0, \pm 1, \pm 2, ...$. The **cross correlation coefficient** is 
+thus given by
+$$\rho = \frac{\sigma_{X_{t + h}Y_t}}{\sigma_{X_{t + h}}\sigma_{Y_t}}$$ 
+Two things to note :
+
+- When one or more $X_{t + h}$, with $h$ *negative*, are predictors of $Y_t$, 
+it is sometimes said that **x leads y**
+
+- When one or more $X_{t + h}$, with $h$ *positive*, are predictors of $Y_t$, 
+it is sometimes said that **x lags y** $^*$
+
+.footnote[
+$^*$ https://online.stat.psu.edu/stat510/lesson/8/8.2
+]
 ---
 ### COVID-19 Cases and Deaths - What is the correlation?
 ```{r, echo = FALSE, fig.width = 16, fig.height = 7.5}
