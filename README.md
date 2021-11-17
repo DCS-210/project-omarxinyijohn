@@ -53,7 +53,9 @@ To further explore the relationship between deaths and cases, we also
 took into account the correlation and cross correlation of the two
 variables. Typically, when we are comparing two variables *X* and *Y*,
 we calculate the correlation coefficient
-$$\\rho = \\frac{\\sigma\_{XY}}{\\sigma\_X\\sigma\_Y}$$
+
+$$\\rho = \\frac{\\sigma\_{XY}}{\\sigma_X\\sigma_Y}$$
+
 The correlation coefficient describes how one variable moves in relation
 to another. When dealing with time series data and both *X* and *Y* are
 functions of time, the time series *Y*<sub>*t*</sub> might be related to
@@ -62,7 +64,8 @@ time series is discrete (it must be), we want to determine the
 relationship between *X*<sub>*t* + *h*</sub> and *Y*<sub>*t*</sub> for
 *h* = 0,  ± 1,  ± 2, ... . The **cross correlation coefficient** is thus
 given by
-$$\\rho = \\frac{\\sigma\_{X\_{t + h}Y\_t}}{\\sigma\_{X\_{t + h}}\\sigma\_{Y\_t}}$$
+
+$$\\rho = \\frac{\\sigma\_{X\_{t + h}Y_t}}{\\sigma\_{X\_{t + h}}\\sigma\_{Y_t}}$$
 
 Two things to note :
 
