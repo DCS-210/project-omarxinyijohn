@@ -742,7 +742,7 @@ vax_deaths_ccf_plot
 vax_deaths_ccf_plot <- xcf_plot(df = merged_US_data, 
          x = merged_US_data$Series_Complete_Yes, 
          y = merged_US_data$total_new_deaths, 
-         title = "Cross Correlation : Daily New Deaths (X) and Total Population Fully Vaccinated (Y)",
+         title = "Cross Correlation : Total Population Fully Vaccinated (X) and Daily New Deaths (Y)",
          lag_var = 250)
 
 vax_deaths_ccf_plot
@@ -753,7 +753,7 @@ vax_deaths_ccf_plot
 vax_deaths_ccf_plot <- xcf_plot(df = merged_US_data, 
          x = merged_US_data$Series_Complete_Yes, 
          y = merged_US_data$total_new_deaths, 
-         title = "Cross Correlation : Daily New Deaths (X) and Total Population Fully Vaccinated (Y)",
+         title = "Cross Correlation : Total Population Fully Vaccinated (X) and Daily New Deaths (Y)",
          lag_var = 100)
 
 vax_deaths_ccf_plot
