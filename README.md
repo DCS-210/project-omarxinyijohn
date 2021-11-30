@@ -4,6 +4,8 @@ by omarxinyijohn
 
 ## Summary
 
+### Introduction
+
 Reported first in December, 2019, the COVID-19 pandemic constitutes the
 largest global public health crisis in a century, with daunting health
 and socioeconomic challenges. In the United States alone, more than
@@ -16,6 +18,8 @@ the CDC. One of these data sets includes cases and deaths data broken
 down by state and date, and the other includes vaccination data broken
 down by state and date. These data sets can be found in the reference
 section of this document.
+
+### Materials and Methods
 
 We start by simply exploring the relationship between deaths and cases
 since the CDC began recording this type of data on January 22nd, 2020.
@@ -95,7 +99,7 @@ testing was not widely available, but determining cause of death was
 easy. In theory, as testing capacity increased, so did case count, which
 would show that cases lagged deaths for a period of time.
 
-Another fundamental factor for analysing COVID-19 data is vaccination
+Another fundamental factor for analyzing COVID-19 data is vaccination
 rates. Due to the limitation of the two data sets in capturing the
 multitude of nuances involved in the pandemic (mask mandates,
 stay-at-home orders, differing general behaviors in different states,
@@ -152,6 +156,38 @@ seasonality into our model. However, a caveat must be added that we only
 have data for approximately two years of COVID-19 (two cycles of
 seasons), so it is possible that seasonality might not have as much of
 an effect given future seasonal data.
+
+### Findings
+
+To summarize, our major findings from this cursory data analysis were
+the following:
+
+-   There is a positive linear relationship between cases and deaths.
+-   Deaths are most correlated to cases with a 7 day lag.
+-   Vaccination percentages vary widely by age group.
+-   There is an approximately 65 day lag until daily new deaths and
+    percent of population fully vaccinated becomes negatively
+    correlated.
+-   There is a relationship between the season and COVID-19 cases/deaths
+    numbers.
+-   Knowing the season improves our ability to model deaths versus
+    cases.
+
+### Limitations
+
+One of the major limits to our data analysis is that we are viewing
+things on national scale and thus missing out on local state-by-state
+trends in our models. This is relevant because different localities have
+different access to vaccines, differing amounts of people taking the
+vaccines, differing restrictions, etc. that might lead to differing
+outcomes if we were to zoom in closer. For the sake of time in brevity,
+we limited our scope to the national scale, which blurred some of these
+potential distinctions. Another limitation already mentioned is that
+testing capacity was not very good at the beginning of the pandemic, so
+it is likely that the data from the early period of the pandemic is more
+unreliable than the rest. There is of course always the inherent
+limitation that cases (and perhaps even some deaths) are missed in the
+count as well.
 
 ## Presentation
 
