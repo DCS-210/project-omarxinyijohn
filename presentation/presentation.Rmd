@@ -209,7 +209,7 @@ state_deaths_cases$submission_date = as.character(state_deaths_cases$submission_
 glimpse(state_deaths_cases)
 ```
 
-```{r daily-total-cases-by-state, echo = FALSE, fig.width = 14, fig.height = 6}
+```{r daily-total-cases-by-state, echo = FALSE, fig.width = 14, fig.height = 6, fig.alt = "Map of US showing evolution of cases by state over time."}
 case_graph = plot_geo(state_deaths_cases,
                       locationmode = 'USA-states',
                       frame = ~submission_date) %>%
@@ -282,7 +282,7 @@ new_US_deaths_cases %>%
 ```
 ---
 ### COVID-19 Cases and Deaths - How did they evolve with time?
-```{r daily-total-deaths-by-state, echo = FALSE, fig.width = 14, fig.height = 6}
+```{r daily-total-deaths-by-state, echo = FALSE, fig.width = 14, fig.height = 6, fig.alt = "Map of US showing evolution of deaths by state over time."}
 death_graph = plot_geo(state_deaths_cases,
                       locationmode = 'USA-states',
                       frame = ~submission_date) %>%
@@ -563,17 +563,6 @@ plot2 <- xcf_plot(df = new_US_deaths_cases,
 plot2
 ```
 ---
-### COVID-19 Cases and Deaths - What is the correlation?
-```{r deaths-cases-cross-correlation-table, echo = FALSE, fig.show='hide'}
-ccf_raw_data <- ccf(new_US_deaths_cases$total_new_cases, new_US_deaths_cases$total_new_deaths, plot = FALSE, lag.max = 14) 
-
-ccf_raw_data <- data.frame(lag = ccf_raw_data$lag, CCF = ccf_raw_data$acf)
-  
-reactable(ccf_raw_data)
-  
-#data.frame(lag = correlation$ccf$lag, CCF = correlation$ccf$acf)
-```
----
 ### COVID-19 Vaccinations Over Time
 Now let's take a look at how the number people of vaccinated in the United States 
 has evolved with time:
@@ -719,22 +708,22 @@ merged_US_data <- inner_join(new_US_vaccinations, new_US_deaths_cases, by = c("D
   filter(Series_Complete_Yes > 0)
 ```
 
-```{r dual-vaccine-deaths-plot, echo = FALSE, fig.width = 14, fig.height = 7, fig.alt = "Dual scatterplot of total number of US Population fully vaccinated versus time and total number of COVID deaths versus time which shows the stages of both deaths and vaccinations in conjunction."}
+```{r dual-vaccine-deaths-plot, echo = FALSE, fig.width = 14, fig.height = 7, fig.alt = "Dual scatterplot of total number of US Population fully vaccinated versus time and daily number of COVID deaths versus time which shows the stages of both deaths and vaccinations in conjunction."}
 coeff <- 1
 
 merged_US_data %>%
   ggplot(aes(x = Date)) +
-  geom_point(aes(y = total_deaths / 10^3), color = "red") + 
+  geom_point(aes(y = total_new_deaths / 10), color = "red") + 
   geom_point(aes(y = Series_Complete_Yes / 10^6), color = "blue") +
-  scale_color_manual(name = "Data", values = c("total_deaths" = "red", "Series_Complete_Yes" = "blue")) +
+  scale_color_manual(name = "Data", values = c("total_new_deaths" = "red", "Series_Complete_Yes" = "blue")) +
   scale_y_continuous(
-    name = "Total # of COVID Deaths (Thousands)",
+    name = "Daily # of COVID Deaths (Tens)",
     sec.axis = sec_axis(~.*coeff, 
                         name = "Total # of People Fully Vaccinated (Millions)",
                         scales::pretty_breaks(n = 10)),
     breaks = scales::pretty_breaks(n = 10)
   ) +
-  labs(title = "Total Fully Vaccinated and Total Deaths vs. Time",
+  labs(title = "Total Fully Vaccinated and Daily New Deaths vs. Time",
        x = "Date",
        color = "Color") +
   theme_bw() +
@@ -810,20 +799,9 @@ vax_deaths_ccf_plot <- xcf_plot(df = merged_US_data,
 vax_deaths_ccf_plot
 ```
 ---
-### Exploring the Relationship Between Vaccinations and Cases/Deaths
-```{r vaccines-deaths-cross-correlation-table, echo = FALSE, fig.show='hide'}
-ccf_raw_data2 <- ccf(merged_US_data$Series_Complete_Yes, merged_US_data$total_new_deaths, plot = FALSE, lag.max = 100) 
-
-ccf_raw_data2 <- data.frame(lag = ccf_raw_data2$lag, CCF = ccf_raw_data2$acf)
-  
-reactable(ccf_raw_data2)
-  
-#data.frame(lag = correlation$ccf$lag, CCF = correlation$ccf$acf)
-```
----
 ### Exploring the Seasonality of COVID-19
 Let's explore the relationship between COVID-19 and the four seasons:
-```{r edit-cases-data-by-season, echo = FALSE}
+```{r edit-cases-data-by-season, echo = FALSE, include = FALSE}
 seasons_deaths_cases <- new_US_deaths_cases %>%
   mutate(season = case_when(
   month(submission_date) %in% c(9, 10, 11) ~ "Fall",
@@ -833,81 +811,13 @@ seasons_deaths_cases <- new_US_deaths_cases %>%
 ))
 ```
 
-```{r add-season-cases-statistics, echo = FALSE}
-avg_season <- seasons_deaths_cases %>%
-  group_by(season) %>%
-  summarise(median_ncases = median(total_new_cases, na.rm = TRUE),
-            median_ndeaths = median(total_new_deaths, na.rm = TRUE),
-            mean_ncases = mean(total_new_cases, na.rm = TRUE),
-            mean_ndeaths = mean(total_new_deaths, na.rm = TRUE),
-            sd_ncases = sd(total_new_cases, na.rm = TRUE),
-            sd_ndeaths = sd(total_new_deaths, na.rm = TRUE),
-            min_ncases = min(total_new_cases, na.rm = TRUE),
-            max_ncases = max(total_new_cases, na.rm = TRUE),
-            iqr_ncases = IQR(total_new_cases, na.rm = TRUE))
-  
-reactable(avg_season)
-```
-
----
-### Exploring the Seasonality of COVID-19
-```{r seasons-ridge-plot, echo = FALSE, message = FALSE, fig.width = 16, fig.height = 7.5, fig.alt = "Ridges plot of cases grouped by season which shows which seasons tended to have higher case numbers."}
-seasons_deaths_cases %>%
-  ggplot(aes(x = total_new_cases / 10^3, 
-             y = reorder(season, total_new_cases), 
-             fill = season)) +
-  geom_density_ridges(alpha = 0.2) +
-  labs(title = "Ridge Plot of Daily New Cases by Season",
-       x = "Daily New Cases (Thousands)",
-       y = "Season",
-       fill = "Season") +
-  theme_bw() +
-  theme(axis.line = element_line(colour = "black"),
-        axis.text.x = element_text(color = "grey20", 
-                                   size = 15, 
-                                   angle = 0, 
-                                   hjust = .5, 
-                                   vjust = .5, 
-                                   face = "plain"),
-        axis.text.y = element_text(color = "grey20", 
-                                   size = 15, 
-                                   angle = 0, 
-                                   hjust = .5, 
-                                   vjust = .5, 
-                                   face = "plain"),  
-        axis.title.x = element_text(color = "grey20", 
-                                    size = 30, 
-                                    angle = 0, 
-                                    hjust = .5, 
-                                    vjust = 0, 
-                                    face = "plain"),
-        axis.title.y = element_text(color = "grey20", 
-                                    size = 30, 
-                                    angle = 90, 
-                                    hjust = .5, 
-                                    vjust = 1, 
-                                    face = "plain"),
-        plot.title = element_text(color = "grey20", 
-                                    size = 30, 
-                                    angle = 0, 
-                                    hjust = .5, 
-                                    vjust = .5, 
-                                    face = "plain"),
-        legend.text = element_text(color = "grey20", 
-                                    size = 15),
-        legend.title = element_text(color = "grey20", 
-                                    size = 20)) +
-  scale_x_continuous(breaks = scales::pretty_breaks(n = 5))
-```
----
-### Exploring the Seasonality of COVID-19
 ```{r seasons-box-plot, echo = FALSE, fig.width = 16, fig.height = 7.5, fig.alt = "Box plot of cases grouped by season which shows that the winter had the highest median number of cases, folloed by the fall, summer, and spring."}
 seasons_deaths_cases %>%
   ggplot(aes(x = total_new_cases / 10^3, 
              y = reorder(season, total_new_cases), 
              fill = season)) +
   geom_boxplot() +
-  labs(title = "Ridge Plot Of Total Daily New Cases By Season",
+  labs(title = "Box Plot Of Total Daily New Cases By Season",
        x = "Daily New Cases (Thousands)",
        y = "Season",
        fill = "Season") +
@@ -1125,14 +1035,28 @@ ggplot(seasons_deaths_cases) +
 tidy(deaths_cases_main_fit)
 ```
 Therefore:
-$$\hat{deaths} = 63 + 0.011 * cases + 358 * spring + 31 * summer + 548 * winter$$
+
+Fall : $\hat{deaths} = 63 + 0.011 * cases$ 
+
+Spring : $\hat{deaths} = 421 + 0.011 * cases$ 
+
+Summer : $\hat{deaths} = 94 + 0.011 * cases$ 
+
+Winter : $\hat{deaths} = 611 + 0.011 * cases$ 
 ---
 ### Tying Seasonality into the Relationship Between Cases and Deaths
 ```{r deaths-cases-int-fit}
 tidy(deaths_cases_int_fit)
 ```
 Therefore:
-$$\hat{d} = 302 + 0.0087 * c + 319 * sp  + 87 * su + 2 * w - 0.0037 * sp * c - 0.0027 * su * c + 0.0053 * w * c$$
+
+Fall : $\hat{d} = 302 + 0.0087 * cases$
+
+Spring : $\hat{d} = 621 + 0.0049 * cases$
+
+Summer : $\hat{d} = 388 + 0.00595 * cases$
+
+Winter : $\hat{d} = 304 + 0.01687 * cases$
 ---
 ### Tying Seasonality into the Relationship Between Cases and Deaths
 Let's compare the adjusted $R^2$ values:
@@ -1170,4 +1094,104 @@ of population fully vaccinated becomes negatively correlated.
 .center2[
 # Questions?
 ]
+---
+### COVID-19 Cases and Deaths - What is the correlation? (CCF Reference Table)
+```{r deaths-cases-cross-correlation-table, echo = FALSE, fig.show='hide'}
+ccf_raw_data <- ccf(new_US_deaths_cases$total_new_cases, new_US_deaths_cases$total_new_deaths, plot = FALSE, lag.max = 14) 
 
+ccf_raw_data <- data.frame(lag = ccf_raw_data$lag, CCF = ccf_raw_data$acf)
+  
+reactable(ccf_raw_data)
+  
+#data.frame(lag = correlation$ccf$lag, CCF = correlation$ccf$acf)
+```
+---
+### Exploring the Relationship Between Vaccinations and Cases/Deaths (CCF Reference Table)
+```{r vaccines-deaths-cross-correlation-table, echo = FALSE, fig.show='hide'}
+ccf_raw_data2 <- ccf(merged_US_data$Series_Complete_Yes, merged_US_data$total_new_deaths, plot = FALSE, lag.max = 100) 
+
+ccf_raw_data2 <- data.frame(lag = ccf_raw_data2$lag, CCF = ccf_raw_data2$acf)
+  
+reactable(ccf_raw_data2)
+  
+#data.frame(lag = correlation$ccf$lag, CCF = correlation$ccf$acf)
+```
+---
+### Exploring the Seasonality of COVID-19
+Summary statistics for season data:
+```{r edit-cases-data-by-season2, echo = FALSE}
+seasons_deaths_cases <- new_US_deaths_cases %>%
+  mutate(season = case_when(
+  month(submission_date) %in% c(9, 10, 11) ~ "Fall",
+  month(submission_date) %in% c(12, 1, 2) ~ "Winter",
+  month(submission_date) %in% c(3, 4, 5) ~ "Spring",
+  month(submission_date) %in% c(6, 7, 8) ~ "Summer"
+))
+```
+
+```{r add-season-cases-statistics, echo = FALSE}
+avg_season <- seasons_deaths_cases %>%
+  group_by(season) %>%
+  summarise(median_ncases = median(total_new_cases, na.rm = TRUE),
+            median_ndeaths = median(total_new_deaths, na.rm = TRUE),
+            mean_ncases = mean(total_new_cases, na.rm = TRUE),
+            mean_ndeaths = mean(total_new_deaths, na.rm = TRUE),
+            sd_ncases = sd(total_new_cases, na.rm = TRUE),
+            sd_ndeaths = sd(total_new_deaths, na.rm = TRUE),
+            min_ncases = min(total_new_cases, na.rm = TRUE),
+            max_ncases = max(total_new_cases, na.rm = TRUE),
+            iqr_ncases = IQR(total_new_cases, na.rm = TRUE))
+  
+reactable(avg_season)
+```
+
+---
+### Exploring the Seasonality of COVID-19
+```{r seasons-ridge-plot, echo = FALSE, message = FALSE, fig.width = 16, fig.height = 7.5, fig.alt = "Ridges plot of cases grouped by season which shows which seasons tended to have higher case numbers."}
+seasons_deaths_cases %>%
+  ggplot(aes(x = total_new_cases / 10^3, 
+             y = reorder(season, total_new_cases), 
+             fill = season)) +
+  geom_density_ridges(alpha = 0.2) +
+  labs(title = "Ridge Plot of Daily New Cases by Season",
+       x = "Daily New Cases (Thousands)",
+       y = "Season",
+       fill = "Season") +
+  theme_bw() +
+  theme(axis.line = element_line(colour = "black"),
+        axis.text.x = element_text(color = "grey20", 
+                                   size = 15, 
+                                   angle = 0, 
+                                   hjust = .5, 
+                                   vjust = .5, 
+                                   face = "plain"),
+        axis.text.y = element_text(color = "grey20", 
+                                   size = 15, 
+                                   angle = 0, 
+                                   hjust = .5, 
+                                   vjust = .5, 
+                                   face = "plain"),  
+        axis.title.x = element_text(color = "grey20", 
+                                    size = 30, 
+                                    angle = 0, 
+                                    hjust = .5, 
+                                    vjust = 0, 
+                                    face = "plain"),
+        axis.title.y = element_text(color = "grey20", 
+                                    size = 30, 
+                                    angle = 90, 
+                                    hjust = .5, 
+                                    vjust = 1, 
+                                    face = "plain"),
+        plot.title = element_text(color = "grey20", 
+                                    size = 30, 
+                                    angle = 0, 
+                                    hjust = .5, 
+                                    vjust = .5, 
+                                    face = "plain"),
+        legend.text = element_text(color = "grey20", 
+                                    size = 15),
+        legend.title = element_text(color = "grey20", 
+                                    size = 20)) +
+  scale_x_continuous(breaks = scales::pretty_breaks(n = 5))
+```
