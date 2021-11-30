@@ -48,7 +48,7 @@ US_vaccinations <-
   read_csv("/cloud/project/data/COVID-19_Vaccinations_in_the_United_States_Jurisdiction.csv")
 ```
 
-```{r, echo = FALSE}
+```{r background-text-color, echo = FALSE}
 style_xaringan(
   title_slide_background_color = "#000000",
   title_slide_text_color = "#FFFFFF"
@@ -81,7 +81,7 @@ shutting down indefinitely. Two days later, Bates College announced they would
 be sending us home!
 
 How do these two key dates compare the worst day(s) of the pandemic?
-```{r, echo = FALSE}
+```{r key-dates-table, echo = FALSE}
 new_US_deaths_cases <- US_deaths_cases %>%
   filter(!(state %in% c("NYC", "PR", "GU",
                            "VI", "MP", "RMI",
@@ -107,7 +107,7 @@ new_US_deaths_cases %>%
   reactable()
 ```
 
-```{r, echo = FALSE, include = FALSE}
+```{r find-max-cases-date, echo = FALSE, include = FALSE}
 # How we obtained the date with the highest number of new cases
 new_US_deaths_cases %>% 
   slice_max(total_new_cases, n = 5) 
@@ -120,7 +120,7 @@ max_cases_date <- max_cases_row$submission_date
 max_cases_date
 ```
 
-```{r, echo = FALSE, include = FALSE}
+```{r find-max-deaths-date, echo = FALSE, include = FALSE}
 # How we obtained the date with the highest number of new deaths
 new_US_deaths_cases %>%
   slice_max(total_new_deaths, n = 5)
@@ -148,7 +148,7 @@ h3 {margin-top: 0.5em ;
 </body>
 </html>
 
-```{r, echo = FALSE, fig.width=14, fig.height=6}
+```{r cases-vs-time, echo = FALSE, fig.width=14, fig.height=6, fig.alt = "Scatterplot of daily new cases versus time where we show the various ebbs and flows of COVID cases."}
 new_US_deaths_cases %>%
   ggplot() +
   geom_point(aes(x = submission_date, y = total_new_cases)) +
@@ -204,7 +204,7 @@ h3 {margin-top: 0.5em ;
 <h3>COVID-19 Cases and Deaths - How did they evolve with time?</h3>
 </body>
 </html>
-```{r, echo = FALSE, fig.width=16, fig.height=8}
+```{r deaths-vs-time, echo = FALSE, fig.width=16, fig.height=8, fig.alt = "Scatterplot of daily new deaths versus time where we show the various ebbs and flows of COVID deaths."}
 new_US_deaths_cases %>%
   ggplot() +
   geom_point(aes(x = submission_date, y = total_new_deaths)) +
@@ -251,7 +251,7 @@ new_US_deaths_cases %>%
 Before we use the R `ccf()` function, let's take a look at the relationship between
 cases and deaths with no lag:
 
-```{r, echo = FALSE, fig.width = 14, fig.height = 6}
+```{r deaths-vs-cases, echo = FALSE, fig.width = 14, fig.height = 6, fig.alt = "Scatterplot of daily new deaths versus daily cases where we show that there appears to be a linear relationship between the two variables."}
 new_US_deaths_cases %>%
   ggplot(aes(x = total_new_cases, y = total_new_deaths)) +
   geom_point() +
@@ -298,13 +298,13 @@ new_US_deaths_cases %>%
 Before we use the R `ccf()` function, let's take a look at the relationship between
 cases and deaths with no lag:
 
-```{r, echo = FALSE}
+```{r deaths-cases-fit, echo = FALSE}
 deaths_cases_fit <- linear_reg() %>%
   set_engine("lm") %>%
   fit(total_new_deaths ~ total_new_cases, data = new_US_deaths_cases) 
 ```
 
-```{r, echo = FALSE, message = FALSE, fig.width = 14, fig.height = 6}
+```{r deaths-vs-cases-line-plot, echo = FALSE, message = FALSE, fig.width = 14, fig.height = 6, fig.alt = "Scatterplot of daily new deaths versus daily cases that includes the line of best fit where we again show that there appears to be a linear relationship between the two variables, this time including the linear regression."}
 new_US_deaths_cases %>%
   ggplot(aes(x = total_new_cases, y = total_new_deaths)) +
   geom_point() +
@@ -353,7 +353,7 @@ new_US_deaths_cases %>%
 ### COVID-19 Cases and Deaths - What is the correlation?
 Let's take a look at the residuals plot to assess whether a linear model is appropriate:
 
-```{r, echo = FALSE, message = FALSE, fig.width = 14, fig.height = 6}
+```{r deaths-cases-residual-plot, echo = FALSE, message = FALSE, fig.width = 14, fig.height = 6, fig.alt = "Residuals scatterplot of residuals versus predicted daily new deaths where we show that the residuals for the most most are evenly spread out from zero, and thus a linear model is a good fit."}
 new_US_deaths_cases %>%
   ggplot(aes(x = augment(deaths_cases_fit$fit)$.fitted, y = augment(deaths_cases_fit$fit)$.resid)) +
   geom_point() +
@@ -399,7 +399,7 @@ new_US_deaths_cases %>%
 ---
 ### COVID-19 Cases and Deaths - What is the correlation?
 Results from the linear regression:
-```{r, echo = FALSE}
+```{r deaths-cases-linear-model, echo = FALSE}
 deaths_cases_fit <- linear_reg() %>%
   set_engine("lm") %>%
   fit(total_new_deaths ~ total_new_cases, data = new_US_deaths_cases) 
@@ -440,7 +440,7 @@ $^*$ https://online.stat.psu.edu/stat510/lesson/8/8.2
 ]
 ---
 ### COVID-19 Cases and Deaths - What is the correlation?
-```{r, echo = FALSE, fig.width = 16, fig.height = 7.5}
+```{r deaths-cases-cross-correlation, echo = FALSE, fig.width = 16, fig.height = 7.5, fig.alt = "Cross correlation plot of daily new cases and daily new deaths where we show that deaths appear to lag cases by approximately 7 days."}
 xcf_plot <- function(df, x, y, title = "Cross Correlation", lag_var = 100){
   df_x <- eval(substitute(x), df)
   df_y <- eval(substitute(y), df)
@@ -502,7 +502,7 @@ plot1
 ```
 ---
 ### COVID-19 Cases and Deaths - What is the correlation?
-```{r, echo = FALSE, fig.width = 16, fig.height = 7.5}
+```{r deaths-cases-cross-correlation-zoom, echo = FALSE, fig.width = 16, fig.height = 7.5, fig.alt = "Zoomed in cross correlation plot of daily new cases and daily new deaths where we show that deaths appear to lag cases by approximately 7 days."}
 plot2 <- xcf_plot(df = new_US_deaths_cases, 
          x = new_US_deaths_cases$total_new_cases, 
          y = new_US_deaths_cases$total_new_deaths, 
@@ -513,7 +513,7 @@ plot2
 ```
 ---
 ### COVID-19 Cases and Deaths - What is the correlation?
-```{r, echo = FALSE, fig.show='hide'}
+```{r deaths-cases-cross-correlation-table, echo = FALSE, fig.show='hide'}
 ccf_raw_data <- ccf(new_US_deaths_cases$total_new_cases, new_US_deaths_cases$total_new_deaths, plot = FALSE, lag.max = 14) 
 
 ccf_raw_data <- data.frame(lag = ccf_raw_data$lag, CCF = ccf_raw_data$acf)
@@ -526,7 +526,7 @@ reactable(ccf_raw_data)
 ### COVID-19 Vaccinations Over Time
 Now let's take a look at how the number people of vaccinated in the United States 
 has evolved with time:
-```{r, echo = FALSE}
+```{r edit-vaccine-data-frame, echo = FALSE}
 new_US_vaccinations <- US_vaccinations %>%
   select(Date, Location, Series_Complete_Yes, 
          Series_Complete_Pop_Pct,
@@ -541,7 +541,7 @@ new_US_vaccinations$Date = as.Date(new_US_vaccinations$Date,
                                               format="%m/%d/%Y")
 ```
 
-```{r, echo = FALSE, fig.width = 14, fig.height = 7}
+```{r vaccinated-vs-time-plot, echo = FALSE, fig.width = 14, fig.height = 7, fig.alt = "Scatterplot of percent of US Population fully vaccinated versus time which shows the stages of increase since the vaccination campaign began in the United States."}
 new_US_vaccinations %>%
   filter(Series_Complete_Pop_Pct > 0) %>%
   ggplot() +
@@ -590,7 +590,7 @@ Although the total population of the US is only about ~55% vaccinated as of earl
 October, 2021, this does not paint a full picture. Let's break down this percentage
 by age group:
 
-```{r, echo = FALSE, fig.width = 14, fig.height = 7}
+```{r vaccinated-vs-time-facet, echo = FALSE, fig.width = 14, fig.height = 7, fig.alt = "Scatterplots of percent of US Population fully vaccinated versus time faced by age group which shows the differences in percentage vaccinated by age group (i.e. older populations have higher percentages)."}
 Pop_Pct.labs <- c("% Fully Vaccinated 12+", 
                   "% Fully Vaccinated (Total Pop)",
                   "% Fully Vaccinated 18+", 
@@ -663,12 +663,12 @@ new_US_vaccinations %>%
 Next, let's take a look at how vaccinations and deaths have evolved over time
 in conjunction with one another:
 
-```{r, echo = FALSE}
+```{r join-cases-vaccine-data, echo = FALSE}
 merged_US_data <- inner_join(new_US_vaccinations, new_US_deaths_cases, by = c("Date" = "submission_date")) %>%
   filter(Series_Complete_Yes > 0)
 ```
 
-```{r, echo = FALSE, fig.width = 14, fig.height = 7}
+```{r dual-vaccine-deaths-plot, echo = FALSE, fig.width = 14, fig.height = 7, fig.alt = "Dual scatterplot of total number of US Population fully vaccinated versus time and total number of COVID deaths versus time which shows the stages of both deaths and vaccinations in conjunction."}
 coeff <- 1
 
 merged_US_data %>%
@@ -728,7 +728,7 @@ merged_US_data %>%
 ```
 ---
 ### Exploring the Relationship Between Vaccinations and Cases/Deaths
-```{r, echo = FALSE, include = FALSE, fig.width = 16, fig.height = 7.5}
+```{r vaccines-deaths-cross-correlation1, echo = FALSE, include = FALSE, fig.width = 16, fig.height = 7.5, fig.alt = "Cross correlation plots of population percentage fully vaccinated and daily new deaths which seems to show that a decrease in deaths lags about 65 days behind an increase in vaccinations."}
 vax_deaths_ccf_plot <- xcf_plot(df = merged_US_data, 
          x = merged_US_data$Series_Complete_Pop_Pct, 
          y = merged_US_data$total_new_deaths, 
@@ -738,7 +738,7 @@ vax_deaths_ccf_plot <- xcf_plot(df = merged_US_data,
 vax_deaths_ccf_plot
 ```
 
-```{r, echo = FALSE, fig.width = 16, fig.height = 7.5}
+```{r vaccines-deaths-cross-correlation2, echo = FALSE, fig.width = 16, fig.height = 7.5, fig.alt = "Cross correlation plots of total population fully vaccinated and daily new deaths which seems to show that a decrease in deaths lags about 65 days behind an increase in vaccinations."}
 vax_deaths_ccf_plot <- xcf_plot(df = merged_US_data, 
          x = merged_US_data$Series_Complete_Yes, 
          y = merged_US_data$total_new_deaths, 
@@ -749,7 +749,7 @@ vax_deaths_ccf_plot
 ```
 ---
 ### Exploring the Relationship Between Vaccinations and Cases/Deaths
-```{r, echo = FALSE, fig.width = 16, fig.height = 7.5}
+```{r vaccines-deaths-cross-correlation-zoom, echo = FALSE, fig.width = 16, fig.height = 7.5, fig.alt = "Zoomed in cross correlation plots of total population fully vaccinated and daily new deaths which seems to show that a decrease in deaths lags about 65 days behind an increase in vaccinations."}
 vax_deaths_ccf_plot <- xcf_plot(df = merged_US_data, 
          x = merged_US_data$Series_Complete_Yes, 
          y = merged_US_data$total_new_deaths, 
@@ -760,7 +760,7 @@ vax_deaths_ccf_plot
 ```
 ---
 ### Exploring the Relationship Between Vaccinations and Cases/Deaths
-```{r, echo = FALSE, fig.show='hide'}
+```{r vaccines-deaths-cross-correlation-table, echo = FALSE, fig.show='hide'}
 ccf_raw_data2 <- ccf(merged_US_data$Series_Complete_Yes, merged_US_data$total_new_deaths, plot = FALSE, lag.max = 100) 
 
 ccf_raw_data2 <- data.frame(lag = ccf_raw_data2$lag, CCF = ccf_raw_data2$acf)
@@ -772,7 +772,7 @@ reactable(ccf_raw_data2)
 ---
 ### Exploring the Seasonality of COVID-19
 Let's explore the relationship between COVID-19 and the four seasons:
-```{r, echo = FALSE}
+```{r edit-cases-data-by-season, echo = FALSE}
 seasons_deaths_cases <- new_US_deaths_cases %>%
   mutate(season = case_when(
   month(submission_date) %in% c(9, 10, 11) ~ "Fall",
@@ -782,7 +782,7 @@ seasons_deaths_cases <- new_US_deaths_cases %>%
 ))
 ```
 
-```{r, echo = FALSE}
+```{r add-season-cases-statistics, echo = FALSE}
 avg_season <- seasons_deaths_cases %>%
   group_by(season) %>%
   summarise(median_ncases = median(total_new_cases, na.rm = TRUE),
@@ -800,7 +800,7 @@ reactable(avg_season)
 
 ---
 ### Exploring the Seasonality of COVID-19
-```{r, echo = FALSE, message = FALSE, fig.width = 16, fig.height = 7.5}
+```{r seasons-ridge-plot, echo = FALSE, message = FALSE, fig.width = 16, fig.height = 7.5, fig.alt = "Ridges plot of cases grouped by season which shows which seasons tended to have higher case numbers."}
 seasons_deaths_cases %>%
   ggplot(aes(x = total_new_cases / 10^3, 
              y = reorder(season, total_new_cases), 
@@ -850,7 +850,7 @@ seasons_deaths_cases %>%
 ```
 ---
 ### Exploring the Seasonality of COVID-19
-```{r, echo = FALSE, fig.width = 16, fig.height = 7.5}
+```{r seasons-box-plot, echo = FALSE, fig.width = 16, fig.height = 7.5, fig.alt = "Box plot of cases grouped by season which shows that the winter had the highest median number of cases, folloed by the fall, summer, and spring."}
 seasons_deaths_cases %>%
   ggplot(aes(x = total_new_cases / 10^3, 
              y = reorder(season, total_new_cases), 
@@ -903,7 +903,7 @@ seasons_deaths_cases %>%
 Towards the end of this semester, we learned how to create models with 
 categorical explanatory variables. Let's run a linear regression by factoring
 the `season` variable:
-```{r, echo = FALSE}
+```{r seasons-linear-regression, echo = FALSE}
 season_lreg <- linear_reg() %>%
   set_engine("lm") %>%
   fit(total_new_cases ~ factor(season), data = seasons_deaths_cases)
@@ -923,7 +923,7 @@ Finally, let's try to see if the relationship between deaths and cases does or
 does not vary by the season. This type of analysis is equivalent to interpreting
 main vs. interaction effects. We will start with the main effects:
 
-```{r, echo = FALSE}
+```{r seasons-main-effects, echo = FALSE}
 deaths_cases_main_fit <- linear_reg() %>%
   set_engine("lm") %>%
   fit(total_new_deaths ~ total_new_cases + factor(season), data = seasons_deaths_cases) 
@@ -939,7 +939,7 @@ deaths_cases_int_fit <- linear_reg() %>%
 #glance(deaths_cases_int_fit)
 ```
 
-```{r, echo = FALSE, message = FALSE, fig.width = 14, fig.height = 6}
+```{r seasons-main-effects-plot, echo = FALSE, message = FALSE, fig.width = 14, fig.height = 6, fig.alt = "Scatterplot of daily new deaths versus daily new cases which shows the main effects for each of the four seasons."}
 season_f <- filter(augment(deaths_cases_main_fit$fit), augment(deaths_cases_main_fit$fit)$"factor(season)" %in% c("Fall"))
 season_w <- filter(augment(deaths_cases_main_fit$fit), augment(deaths_cases_main_fit$fit)$"factor(season)" %in% c("Winter"))
 season_sp <- filter(augment(deaths_cases_main_fit$fit), augment(deaths_cases_main_fit$fit)$"factor(season)" %in% c("Spring"))
@@ -1011,7 +1011,7 @@ ggplot(seasons_deaths_cases) +
 ### Tying Seasonality into the Relationship Between Cases and Deaths
 Now we will view the interaction effects:
 
-```{r, echo = FALSE, message = FALSE, fig.width = 14, fig.height = 6}
+```{r seasons-interaction-effects-plot, echo = FALSE, message = FALSE, fig.width = 14, fig.height = 6, fig.alt = "Scatterplot of daily new deaths versus daily new cases which shows the interaction effects for each of the four seasons."}
 season_f <- filter(seasons_deaths_cases, season == "Fall")
 season_w <- filter(seasons_deaths_cases, season == "Winter")
 season_sp <- filter(seasons_deaths_cases, season == "Spring")
@@ -1070,14 +1070,14 @@ ggplot(seasons_deaths_cases) +
 ```
 ---
 ### Tying Seasonality into the Relationship Between Cases and Deaths
-```{r}
+```{r deaths-cases-main-fit}
 deaths_cases_main_fit
 ```
 Therefore:
 $$\hat{deaths} = 63 + 0.011 * cases + 358 * spring + 31 * summer + 548 * winter$$
 ---
 ### Tying Seasonality into the Relationship Between Cases and Deaths
-```{r}
+```{r deaths-cases-int-fit}
 deaths_cases_int_fit
 ```
 Therefore:
@@ -1085,7 +1085,7 @@ $$\hat{d} = 302 + 0.0087 * c + 319 * sp  + 87 * su + 2 * w - 0.0037 * sp * c - 0
 ---
 ### Tying Seasonality into the Relationship Between Cases and Deaths
 Let's compare the adjusted $R^2$ values:
-```{r}
+```{r glance-main-and-int-fits}
 glance(deaths_cases_main_fit)
 glance(deaths_cases_int_fit)
 ```
