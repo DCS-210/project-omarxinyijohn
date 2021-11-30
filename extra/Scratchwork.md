@@ -1240,7 +1240,24 @@ seasons_deaths_cases <- new_US_deaths_cases %>%
   month(submission_date) %in% c(3, 4, 5) ~ "Spring",
   month(submission_date) %in% c(6, 7, 8) ~ "Summer"
 ))
+
+seasons_deaths_cases
 ```
+
+    ## # A tibble: 623 × 6
+    ##    submission_date total_new_cases total_new_deaths total_cases total_deaths
+    ##    <date>                    <dbl>            <dbl>       <dbl>        <dbl>
+    ##  1 2021-10-05                97795             1931    42579909       666441
+    ##  2 2021-10-04                70023              929    42481876       664510
+    ##  3 2021-10-03                70437              646    42411824       663512
+    ##  4 2021-10-02                80172              968    42341180       662842
+    ##  5 2021-10-01               115710             1827    42260515       661874
+    ##  6 2021-09-30               114501             1624    42143377       660005
+    ##  7 2021-09-29               115726             1949    42027449       658347
+    ##  8 2021-09-28               109928             1741    41910369       656348
+    ##  9 2021-09-27                86227             1152    41799372       654585
+    ## 10 2021-09-26                80308              812    41712532       652986
+    ## # … with 613 more rows, and 1 more variable: season <chr>
 
 ``` r
 seasons_deaths_cases %>%
@@ -1372,7 +1389,7 @@ season_lreg
 
     ## parsnip model object
     ## 
-    ## Fit time:  5ms 
+    ## Fit time:  4ms 
     ## 
     ## Call:
     ## stats::lm(formula = total_new_cases ~ factor(season), data = data)

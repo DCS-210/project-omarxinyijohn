@@ -33,6 +33,7 @@ library(sjlabelled)
 library(reactable)
 library(gghighlight)
 library(interactions)
+library(plotly)
 ```
 
 ```{r setup, include = FALSE}
@@ -191,6 +192,39 @@ new_US_deaths_cases %>%
   scale_y_continuous(breaks = scales::pretty_breaks(n = 10))
 ```
 ---
+### COVID-19 Cases and Deaths - How did they evolve with time?
+
+```{r states-deaths-cases, echo = FALSE, include = FALSE}
+state_deaths_cases <- US_deaths_cases %>%
+  select(submission_date, state, new_case, new_death, tot_cases, tot_death)
+
+state_deaths_cases$submission_date = as.Date(state_deaths_cases$submission_date,
+                                              format = "%m/%d/%Y")
+
+state_deaths_cases <- state_deaths_cases %>%
+  arrange(desc(submission_date))
+
+state_deaths_cases$submission_date = as.character(state_deaths_cases$submission_date)
+
+glimpse(state_deaths_cases)
+```
+
+```{r daily-total-cases-by-state, echo = FALSE, fig.width = 14, fig.height = 6}
+case_graph = plot_geo(state_deaths_cases,
+                      locationmode = 'USA-states',
+                      frame = ~submission_date) %>%
+                      add_trace(locations = ~state,
+                      z = ~new_case,
+                      zmin = 0,
+                      zmax = max(state_deaths_cases$new_case),
+                      color = ~new_case,
+                      colorscale = 'electric') %>%
+              layout(geo = list(scope = 'usa'),
+                     title = 'COVID-19 Daily Cases in the US by State')
+
+ case_graph
+```
+---
 <html>
 <head>
 <style>
@@ -245,6 +279,23 @@ new_US_deaths_cases %>%
                                     face = "plain")) +
   scale_x_date(date_breaks = "2 month", date_labels =  "%b %Y") +
   scale_y_continuous(breaks = scales::pretty_breaks(n = 10))
+```
+---
+### COVID-19 Cases and Deaths - How did they evolve with time?
+```{r daily-total-deaths-by-state, echo = FALSE, fig.width = 14, fig.height = 6}
+death_graph = plot_geo(state_deaths_cases,
+                      locationmode = 'USA-states',
+                      frame = ~submission_date) %>%
+                      add_trace(locations = ~state,
+                      z = ~new_death,
+                      zmin = 0,
+                      zmax = max(state_deaths_cases$new_death),
+                      color = ~new_death,
+                      colorscale = 'electric') %>%
+              layout(geo = list(scope = 'usa'),
+                     title = 'COVID-19 Daily Deaths in the US by State')
+
+death_graph
 ```
 ---
 ### COVID-19 Cases and Deaths - What is the correlation?
@@ -404,7 +455,7 @@ deaths_cases_fit <- linear_reg() %>%
   set_engine("lm") %>%
   fit(total_new_deaths ~ total_new_cases, data = new_US_deaths_cases) 
 
-deaths_cases_fit
+tidy(deaths_cases_fit)
 
 glance(deaths_cases_fit)
 ```
@@ -908,7 +959,7 @@ season_lreg <- linear_reg() %>%
   set_engine("lm") %>%
   fit(total_new_cases ~ factor(season), data = seasons_deaths_cases)
 
-season_lreg
+tidy(season_lreg)
 
 glance(season_lreg)
 ```
@@ -1071,14 +1122,14 @@ ggplot(seasons_deaths_cases) +
 ---
 ### Tying Seasonality into the Relationship Between Cases and Deaths
 ```{r deaths-cases-main-fit}
-deaths_cases_main_fit
+tidy(deaths_cases_main_fit)
 ```
 Therefore:
 $$\hat{deaths} = 63 + 0.011 * cases + 358 * spring + 31 * summer + 548 * winter$$
 ---
 ### Tying Seasonality into the Relationship Between Cases and Deaths
 ```{r deaths-cases-int-fit}
-deaths_cases_int_fit
+tidy(deaths_cases_int_fit)
 ```
 Therefore:
 $$\hat{d} = 302 + 0.0087 * c + 319 * sp  + 87 * su + 2 * w - 0.0037 * sp * c - 0.0027 * su * c + 0.0053 * w * c$$
@@ -1100,6 +1151,11 @@ sense to include it in our model.
 of population fully vaccinated becomes negatively correlated. 
 - There is a relationship between the season and COVID-19 cases/deaths numbers
 - Knowing the season improves our ability to model deaths versus cases
+- There are some limitations to our analysis:
+  - Testing capacity was not fully operational at the beginning of the pandemic
+  - We are viewing things on national scale so we are missing out on local trends
+  - We did not take into account the differing vaccination rates by region or
+  how vaccination accessibility might not be as high in certain regions
 ---
 <style>
 .center2 {

@@ -1,0 +1,69 @@
+---
+title: "OmarPlots"
+output: html_document
+---
+
+```{r load-packages, message = FALSE}
+library(tidyverse)
+library(broom)
+library(lubridate)
+library(devtools)
+library(dsbox)
+library(ggridges)
+library(tidymodels)
+library(openintro)
+library(plotly)
+```
+
+```{r view-deaths-cases}
+US_deaths_cases <- 
+  read_csv("/cloud/project/data/United_States_COVID-19_Cases_and_Deaths_by_State_over_Time.csv")
+glimpse(US_deaths_cases)
+```
+
+```{r}
+state_deaths_cases <- US_deaths_cases %>%
+  select(submission_date, state, new_case, new_death, tot_cases, tot_death)
+
+state_deaths_cases$submission_date = as.Date(state_deaths_cases$submission_date,
+                                              format = "%m/%d/%Y")
+
+state_deaths_cases <- state_deaths_cases %>%
+  arrange(desc(submission_date))
+
+state_deaths_cases$submission_date = as.character(state_deaths_cases$submission_date)
+
+glimpse(state_deaths_cases)
+```
+
+```{r daily-total-cases-by-state}
+case_graph = plot_geo(state_deaths_cases,
+                      locationmode = 'USA-states',
+                      frame = ~submission_date) %>%
+                      add_trace(locations = ~state,
+                      z = ~new_case,
+                      zmin = 0,
+                      zmax = max(state_deaths_cases$new_case),
+                      color = ~new_case,
+                      colorscale = 'electric') %>%
+              layout(geo = list(scope = 'usa'),
+                     title = 'COVID-19 Cases in the US, Daily')
+
+ case_graph
+```
+
+```{r daily-total-deaths-by-state}
+death_graph = plot_geo(state_deaths_cases,
+                      locationmode = 'USA-states',
+                      frame = ~submission_date) %>%
+                      add_trace(locations = ~state,
+                      z = ~new_death,
+                      zmin = 0,
+                      zmax = max(state_deaths_cases$new_death),
+                      color = ~new_death,
+                      colorscale = 'electric') %>%
+              layout(geo = list(scope = 'usa'),
+                     title = 'COVID-19 Cases in the US, Daily')
+
+death_graph
+```
